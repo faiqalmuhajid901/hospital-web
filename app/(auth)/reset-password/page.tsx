@@ -60,7 +60,7 @@ export default function ResetPasswordPage() {
 
         <button
           type="button"
-          className="h-12 w-full rounded-xl bg-gradient-to-r from-[#156eea] to-[#075acb] text-sm font-extrabold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-xl"
+          className="h-12 w-full rounded-xl bg-linear-to-r from-[#156eea] to-[#075acb] text-sm font-extrabold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-xl"
         >
           Reset Password
         </button>

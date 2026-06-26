@@ -1,4 +1,5 @@
 import { DashboardShell } from "../../components/dashboard/DashboardShell";
+import styles from "./profile.module.css";
 
 type ProfileRowProps = {
   label: string;
@@ -38,45 +39,45 @@ const profileRows: ProfileRowProps[] = [
 
 function ProfileRow({ label, value }: ProfileRowProps) {
   return (
-    <div className="his-profile-row">
-      <p className="his-profile-label">{label}</p>
-      <p className="his-profile-value">{value}</p>
+    <div className={styles.row}>
+      <p className={styles.label}>{label}</p>
+      <p className={styles.value}>{value}</p>
     </div>
   );
 }
 
 export default function ProfilePage() {
   return (
-    <DashboardShell title="Profil Saya">
-      <div className="his-profile-wrap">
-        <h2 className="his-page-title">Profil Saya</h2>
+    <DashboardShell title="Profil Saya" activeMenu="profile">
+      <div className={styles.wrap}>
+        <h2 className={styles.pageTitle}>Profil Saya</h2>
 
-        <p className="his-page-description">
+        <p className={styles.pageDescription}>
           Kelola informasi akun dan identitas pengguna.
         </p>
 
-        <section className="his-profile-card">
-          <div className="his-profile-header">
-            <div className="his-profile-identity">
-              <div className="his-profile-avatar-wrap">
-                <div className="his-profile-avatar">AP</div>
-                <span className="his-status-badge">Aktif</span>
+        <section className={styles.card}>
+          <div className={styles.header}>
+            <div className={styles.identity}>
+              <div className={styles.avatarWrap}>
+                <div className={styles.avatar}>AP</div>
+                <span className={styles.statusBadge}>Aktif</span>
               </div>
 
               <div>
-                <h3 className="his-profile-name">dr. Azita Putri</h3>
-                <p className="his-profile-job">Dokter Umum</p>
-                <p className="his-profile-unit">Poli Umum</p>
+                <h3 className={styles.name}>dr. Azita Putri</h3>
+                <p className={styles.job}>Dokter Umum</p>
+                <p className={styles.unit}>Poli Umum</p>
               </div>
             </div>
 
-            <button type="button" className="his-edit-button">
+            <button type="button" className={styles.editButton}>
               Edit Profil
             </button>
           </div>
 
-          <div className="his-profile-grid">
-            <div className="his-profile-detail">
+          <div className={styles.grid}>
+            <div className={styles.detail}>
               {profileRows.map((row) => (
                 <ProfileRow
                   key={row.label}
@@ -86,25 +87,25 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            <aside className="his-account-summary">
-              <p className="his-summary-title">Ringkasan Akun</p>
+            <aside className={styles.summary}>
+              <p className={styles.summaryTitle}>Ringkasan Akun</p>
 
-              <div className="his-summary-list">
-                <div className="his-summary-item">
-                  <p className="his-summary-label">Role</p>
-                  <p className="his-summary-value">Dokter</p>
+              <div className={styles.summaryList}>
+                <div className={styles.summaryItem}>
+                  <p className={styles.summaryLabel}>Role</p>
+                  <p className={styles.summaryValue}>Dokter</p>
                 </div>
 
-                <div className="his-summary-item">
-                  <p className="his-summary-label">Hak Akses</p>
-                  <p className="his-summary-value">
+                <div className={styles.summaryItem}>
+                  <p className={styles.summaryLabel}>Hak Akses</p>
+                  <p className={styles.summaryValue}>
                     Rekam Medis, Appointment, Rawat Jalan
                   </p>
                 </div>
 
-                <div className="his-summary-item">
-                  <p className="his-summary-label">Status Akun</p>
-                  <span className="his-summary-status">Aktif</span>
+                <div className={styles.summaryItem}>
+                  <p className={styles.summaryLabel}>Status Akun</p>
+                  <span className={styles.summaryStatus}>Aktif</span>
                 </div>
               </div>
             </aside>

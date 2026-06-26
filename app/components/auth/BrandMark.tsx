@@ -1,7 +1,7 @@
 export function BrandMark() {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#13bfd3] to-[#156eea] shadow-lg shadow-blue-200">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-[#13bfd3] to-[#156eea] shadow-lg shadow-blue-200">
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { BrandMark } from "./BrandMark";
+import styles from "./AuthShell.module.css";
 
 type AuthShellProps = {
   children: ReactNode;
@@ -18,13 +19,13 @@ function HospitalIllustration() {
           {Array.from({ length: 16 }).map((_, index) => (
             <span
               key={index}
-              className="h-4 w-6 rounded bg-gradient-to-b from-[#d9f3ff] to-[#a9dcff]"
+              className="h-4 w-6 rounded bg-linear-to-b from-[#d9f3ff] to-[#a9dcff]"
             />
           ))}
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-8 h-48 w-32 rounded-t-[2rem] border border-blue-100 bg-gradient-to-b from-white to-[#dff4ff] shadow-2xl shadow-blue-100">
+      <div className="absolute bottom-0 right-8 h-48 w-32 rounded-t-4xl border border-blue-100 bg-linear-to-b from-white to-[#dff4ff] shadow-2xl shadow-blue-100">
         <div className="mx-auto mt-5 h-6 w-16 rounded-full bg-[#156eea]/10" />
 
         <div className="mx-auto mt-6 grid w-20 grid-cols-3 gap-2">
@@ -44,14 +45,14 @@ function MailIllustration() {
   return (
     <div className="relative mx-auto mt-12 h-56 w-full max-w-[300px]">
       <div className="absolute left-1/2 top-12 h-32 w-48 -translate-x-1/2 rounded-3xl border border-blue-100 bg-white shadow-2xl shadow-blue-100">
-        <div className="absolute inset-x-0 top-0 h-20 rounded-t-3xl bg-gradient-to-br from-[#eaf7ff] to-white" />
+        <div className="absolute inset-x-0 top-0 h-20 rounded-t-3xl bg-linear-to-br from-[#eaf7ff] to-white" />
 
         <div className="absolute left-8 top-12 h-12 w-32 rounded-2xl border border-blue-100 bg-white" />
         <div className="absolute left-10 top-16 h-2 w-20 rounded bg-blue-100" />
         <div className="absolute left-10 top-[5.5rem] h-2 w-28 rounded bg-cyan-100" />
       </div>
 
-      <div className="absolute left-9 top-8 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#13bfd3] to-[#156eea] text-3xl font-black text-white shadow-xl shadow-cyan-100">
+      <div className="absolute left-9 top-8 flex h-16 w-16 items-center justify-center rounded-3xl bg-linear-to-br from-[#13bfd3] to-[#156eea] text-3xl font-black text-white shadow-xl shadow-cyan-100">
         ?
       </div>
 
@@ -66,7 +67,7 @@ function LockIllustration() {
   return (
     <div className="relative mx-auto mt-12 h-56 w-full max-w-[300px]">
       <div className="absolute bottom-8 left-1/2 h-28 w-36 -translate-x-1/2 rounded-3xl border border-blue-100 bg-white shadow-2xl shadow-blue-100">
-        <div className="absolute left-1/2 top-8 h-14 w-14 -translate-x-1/2 rounded-2xl bg-gradient-to-br from-[#13bfd3] to-[#156eea] shadow-xl shadow-cyan-100">
+        <div className="absolute left-1/2 top-8 h-14 w-14 -translate-x-1/2 rounded-2xl bg-linear-to-br from-[#13bfd3] to-[#156eea] shadow-xl shadow-cyan-100">
           <div className="absolute left-1/2 top-5 h-4 w-4 -translate-x-1/2 rounded-full bg-white" />
           <div className="absolute left-1/2 top-8 h-5 w-1.5 -translate-x-1/2 rounded-full bg-white" />
         </div>
@@ -86,13 +87,8 @@ function LockIllustration() {
 }
 
 function AuthIllustration({ mode }: { mode: "hospital" | "mail" | "lock" }) {
-  if (mode === "mail") {
-    return <MailIllustration />;
-  }
-
-  if (mode === "lock") {
-    return <LockIllustration />;
-  }
+  if (mode === "mail") return <MailIllustration />;
+  if (mode === "lock") return <LockIllustration />;
 
   return <HospitalIllustration />;
 }
@@ -104,10 +100,14 @@ export function AuthShell({
   mode = "hospital",
 }: AuthShellProps) {
   return (
-    <main className="auth-grid-bg min-h-screen px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
+    <main
+      className={`${styles.gridBg} min-h-screen px-4 py-6 text-slate-900 sm:px-6 lg:px-8`}
+    >
       <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-6xl items-center justify-center">
-        <section className="auth-panel-shadow grid w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/72 backdrop-blur-xl lg:grid-cols-[0.92fr_1.08fr]">
-          <aside className="relative hidden min-h-[690px] flex-col overflow-hidden bg-gradient-to-br from-[#eef8ff] via-white to-[#f7fbff] px-10 py-9 lg:flex">
+        <section
+          className={`${styles.panelShadow} grid w-full overflow-hidden rounded-4xl border border-white/80 bg-white/72 backdrop-blur-xl lg:grid-cols-[0.92fr_1.08fr]`}
+        >
+          <aside className="relative hidden min-h-[690px] flex-col overflow-hidden bg-linear-to-br from-[#eef8ff] via-white to-[#f7fbff] px-10 py-9 lg:flex">
             <BrandMark />
 
             <div className="mt-16 max-w-[290px]">
@@ -128,7 +128,7 @@ export function AuthShell({
 
             <AuthIllustration mode={mode} />
 
-            <div className="auth-wave" />
+            <div className={styles.wave} />
           </aside>
 
           <section className="flex min-h-[690px] items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
@@ -137,7 +137,9 @@ export function AuthShell({
                 <BrandMark />
               </div>
 
-              <div className="auth-card-shadow rounded-[1.6rem] border border-white bg-white px-6 py-7 sm:px-8">
+              <div
+                className={`${styles.cardShadow} rounded-[1.6rem] border border-white bg-white px-6 py-7 sm:px-8`}
+              >
                 <div className="mb-7">
                   <p className="text-sm font-bold text-[#156eea]">{title}</p>
 

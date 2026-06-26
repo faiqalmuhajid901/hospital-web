@@ -1,67 +1,134 @@
 import Link from "next/link";
 import { BrandMark } from "../auth/BrandMark";
+import styles from "./Sidebar.module.css";
 
 type MenuItem = {
+  key: string;
   label: string;
   href: string;
   icon: string;
-  active?: boolean;
+};
+
+type SidebarProps = {
+  activeMenu?: string;
 };
 
 const mainMenus: MenuItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: "▦" },
-  { label: "Pasien", href: "/patients", icon: "◎" },
-  { label: "Pendaftaran", href: "/registration", icon: "✚" },
-  { label: "Rawat Jalan", href: "/outpatient", icon: "▣" },
-  { label: "Rawat Inap", href: "/inpatient", icon: "▤" },
-  { label: "Farmasi", href: "/pharmacy", icon: "✦" },
-  { label: "Laboratorium", href: "/laboratory", icon: "⚕" },
-  { label: "Billing", href: "/billing", icon: "◈" },
-  { label: "Inventori", href: "/inventory", icon: "▧" },
-  { label: "Laporan", href: "/reports", icon: "☷" },
+  { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "▦" },
+  { key: "patients", label: "Pasien", href: "/patients", icon: "◎" },
+  {
+    key: "registration",
+    label: "Pendaftaran",
+    href: "/registration",
+    icon: "✚",
+  },
+  { key: "outpatient", label: "Rawat Jalan", href: "/outpatient", icon: "▣" },
+  { key: "inpatient", label: "Rawat Inap", href: "/inpatient", icon: "▤" },
+  { key: "pharmacy", label: "Farmasi", href: "/pharmacy", icon: "✦" },
+  {
+    key: "laboratory",
+    label: "Laboratorium",
+    href: "/laboratory",
+    icon: "⚕",
+  },
+  { key: "billing", label: "Billing", href: "/billing", icon: "◈" },
+  { key: "inventory", label: "Inventori", href: "/inventory", icon: "▧" },
+  { key: "reports", label: "Laporan", href: "/reports", icon: "☷" },
 ];
 
 const settingMenus: MenuItem[] = [
-  { label: "Pengguna", href: "/profile", icon: "◉", active: true },
-  { label: "Role & Hak Akses", href: "/roles", icon: "◇" },
-  { label: "Audit Trail", href: "/audit-trail", icon: "⌁" },
+  { key: "profile", label: "Profil Saya", href: "/profile", icon: "◉" },
+  {
+    key: "change-password",
+    label: "Ubah Password",
+    href: "/change-password",
+    icon: "◇",
+  },
+  { key: "users", label: "Pengguna", href: "/users", icon: "👤" },
+  { key: "roles", label: "Role & Hak Akses", href: "/roles", icon: "▣" },
+  {
+    key: "permissions",
+    label: "Permission",
+    href: "/permissions",
+    icon: "☑",
+  },
+  {
+    key: "notifications",
+    label: "Notifikasi",
+    href: "/notifications",
+    icon: "🔔",
+  },
+  {
+    key: "notification-settings",
+    label: "Pengaturan Notifikasi",
+    href: "/notification-settings",
+    icon: "⚙",
+  },
+  {
+    key: "activity-logs",
+    label: "Log Aktivitas",
+    href: "/activity-logs",
+    icon: "⌁",
+  },
+  {
+    key: "login-history",
+    label: "Riwayat Login",
+    href: "/login-history",
+    icon: "↪",
+  },
+  {
+  key: "activity-report",
+  label: "Laporan Aktivitas",
+  href: "/activity-report",
+  icon: "▥",
+  },
 ];
 
-function SidebarItem({ item }: { item: MenuItem }) {
+function SidebarItem({
+  item,
+  active,
+}: {
+  item: MenuItem;
+  active: boolean;
+}) {
   return (
     <Link
       href={item.href}
-      className={
-        item.active
-          ? "his-sidebar-link his-sidebar-link-active"
-          : "his-sidebar-link"
-      }
+      className={active ? `${styles.link} ${styles.active}` : styles.link}
     >
-      <span className="his-sidebar-icon">{item.icon}</span>
+      <span className={styles.icon}>{item.icon}</span>
       <span>{item.label}</span>
     </Link>
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ activeMenu }: SidebarProps) {
   return (
-    <aside className="his-sidebar">
-      <div className="his-sidebar-logo">
+    <aside className={styles.sidebar}>
+      <div className={styles.logo}>
         <BrandMark />
       </div>
 
-      <nav className="his-sidebar-nav">
+      <nav className={styles.nav}>
         {mainMenus.map((item) => (
-          <SidebarItem key={item.href} item={item} />
+          <SidebarItem
+            key={item.key}
+            item={item}
+            active={activeMenu === item.key}
+          />
         ))}
       </nav>
 
-      <div className="his-sidebar-group">
-        <p className="his-sidebar-title">Pengaturan</p>
+      <div className={styles.group}>
+        <p className={styles.title}>Pengaturan</p>
 
-        <nav className="his-sidebar-nav">
+        <nav className={styles.nav}>
           {settingMenus.map((item) => (
-            <SidebarItem key={item.href} item={item} />
+            <SidebarItem
+              key={item.key}
+              item={item}
+              active={activeMenu === item.key}
+            />
           ))}
         </nav>
       </div>

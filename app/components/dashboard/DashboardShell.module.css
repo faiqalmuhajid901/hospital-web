@@ -1,0 +1,140 @@
+.dashboard {
+  min-height: 100vh;
+  width: 100%;
+  background: #f4f8fd;
+  color: #102033;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.mainArea {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 82px;
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e8eef6;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 0 34px;
+  box-shadow: 0 8px 24px rgba(15, 52, 96, 0.04);
+  backdrop-filter: blur(18px);
+}
+
+.topbarKicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.topbarTitle {
+  margin: 4px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #102033;
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconButton {
+  position: relative;
+  display: flex;
+  height: 42px;
+  width: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06);
+  cursor: pointer;
+}
+
+.dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  height: 9px;
+  width: 9px;
+  border-radius: 999px;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+}
+
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 6px 14px 6px 6px;
+  box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06);
+}
+
+.userAvatarSmall {
+  display: flex;
+  height: 38px;
+  width: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #13bfd3, #156eea);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.userName {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  color: #102033;
+}
+
+.userRole {
+  margin: 1px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+  padding: 34px;
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    padding: 0 20px;
+  }
+
+  .userChip {
+    display: none;
+  }
+
+  .content {
+    padding: 24px;
+  }
+}
