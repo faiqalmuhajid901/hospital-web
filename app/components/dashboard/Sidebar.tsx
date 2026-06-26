@@ -14,38 +14,114 @@ type SidebarProps = {
 };
 
 const mainMenus: MenuItem[] = [
-  { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "▦" },
-  { key: "patients", label: "Pasien", href: "/patients", icon: "◎" },
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard/admin",
+    icon: "▦",
+  },
+  {
+    key: "patients",
+    label: "Pasien",
+    href: "/patients",
+    icon: "◎",
+  },
   {
     key: "registration",
     label: "Pendaftaran",
     href: "/registration",
     icon: "✚",
   },
-  { key: "outpatient", label: "Rawat Jalan", href: "/outpatient", icon: "▣" },
-  { key: "inpatient", label: "Rawat Inap", href: "/inpatient", icon: "▤" },
-  { key: "pharmacy", label: "Farmasi", href: "/pharmacy", icon: "✦" },
+  {
+    key: "outpatient",
+    label: "Rawat Jalan",
+    href: "/outpatient",
+    icon: "▣",
+  },
+  {
+    key: "inpatient",
+    label: "Rawat Inap",
+    href: "/inpatient",
+    icon: "▤",
+  },
+  {
+    key: "pharmacy",
+    label: "Farmasi",
+    href: "/dashboard/pharmacy",
+    icon: "✦",
+  },
   {
     key: "laboratory",
     label: "Laboratorium",
-    href: "/laboratory",
+    href: "/dashboard/laboratory",
     icon: "⚕",
   },
-  { key: "billing", label: "Billing", href: "/billing", icon: "◈" },
-  { key: "inventory", label: "Inventori", href: "/inventory", icon: "▧" },
-  { key: "reports", label: "Laporan", href: "/reports", icon: "☷" },
+  {
+    key: "billing",
+    label: "Billing",
+    href: "/billing",
+    icon: "◈",
+  },
+  {
+    key: "inventory",
+    label: "Inventori",
+    href: "/inventory",
+    icon: "▧",
+  },
+  {
+    key: "reports",
+    label: "Laporan",
+    href: "/reports",
+    icon: "☷",
+  },
+];
+
+const dashboardRoleMenus: MenuItem[] = [
+  {
+    key: "dashboard-doctor",
+    label: "Dashboard Dokter",
+    href: "/dashboard/doctor",
+    icon: "D",
+  },
+  {
+    key: "dashboard-patient",
+    label: "Dashboard Pasien",
+    href: "/dashboard/patient",
+    icon: "P",
+  },
+  {
+    key: "dashboard-nurse",
+    label: "Dashboard Perawat",
+    href: "/dashboard/nurse",
+    icon: "N",
+  },
 ];
 
 const settingMenus: MenuItem[] = [
-  { key: "profile", label: "Profil Saya", href: "/profile", icon: "◉" },
+  {
+    key: "profile",
+    label: "Profil Saya",
+    href: "/profile",
+    icon: "◉",
+  },
   {
     key: "change-password",
     label: "Ubah Password",
     href: "/change-password",
     icon: "◇",
   },
-  { key: "users", label: "Pengguna", href: "/users", icon: "👤" },
-  { key: "roles", label: "Role & Hak Akses", href: "/roles", icon: "▣" },
+  {
+    key: "users",
+    label: "Pengguna",
+    href: "/users",
+    icon: "👤",
+  },
+  {
+    key: "roles",
+    label: "Role & Hak Akses",
+    href: "/roles",
+    icon: "▣",
+  },
   {
     key: "permissions",
     label: "Permission",
@@ -77,10 +153,10 @@ const settingMenus: MenuItem[] = [
     icon: "↪",
   },
   {
-  key: "activity-report",
-  label: "Laporan Aktivitas",
-  href: "/activity-report",
-  icon: "▥",
+    key: "activity-report",
+    label: "Laporan Aktivitas",
+    href: "/activity-report",
+    icon: "▥",
   },
 ];
 
@@ -118,6 +194,20 @@ export function Sidebar({ activeMenu }: SidebarProps) {
           />
         ))}
       </nav>
+
+      <div className={styles.group}>
+        <p className={styles.title}>Dashboard Role</p>
+
+        <nav className={styles.nav}>
+          {dashboardRoleMenus.map((item) => (
+            <SidebarItem
+              key={item.key}
+              item={item}
+              active={activeMenu === item.key}
+            />
+          ))}
+        </nav>
+      </div>
 
       <div className={styles.group}>
         <p className={styles.title}>Pengaturan</p>

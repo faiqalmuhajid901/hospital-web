@@ -1,0 +1,317 @@
+.page {
+  width: 100%;
+  max-width: 840px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #13bfd3, #156eea);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.kicker {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.title {
+  margin: 4px 0 0;
+  color: #102033;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.dateSelect {
+  height: 44px;
+  min-width: 150px;
+  border: 1px solid #dce8f6;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  color: #102033;
+  font-size: 13px;
+  font-weight: 800;
+  outline: none;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.statCard {
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 18px;
+  box-shadow: 0 18px 44px rgba(21, 110, 234, 0.08);
+}
+
+.statLabel {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.statValue {
+  margin: 0;
+  color: #102033;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.panel {
+  border: 1px solid #ffffff;
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 18px 44px rgba(21, 110, 234, 0.08);
+  margin-bottom: 22px;
+}
+
+.panelTitle {
+  margin: 0 0 18px;
+  color: #102033;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.table th {
+  border-bottom: 1px solid #edf2f7;
+  padding: 13px 10px;
+  color: #64748b;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.table td {
+  border-bottom: 1px solid #f1f5f9;
+  padding: 14px 10px;
+  color: #102033;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.status {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.process {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.new {
+  background: #eff6ff;
+  color: #156eea;
+}
+
+.linkButton {
+  display: inline-flex;
+  margin-top: 16px;
+  border: none;
+  background: transparent;
+  color: #156eea;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.bottomGrid .panel {
+  margin-bottom: 0;
+}
+
+.donutWrap {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.donut {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      #156eea 0deg 126deg,
+      #13bfd3 126deg 216deg,
+      #7c3aed 216deg 270deg,
+      #20c997 270deg 324deg,
+      #94a3b8 324deg 360deg
+    );
+}
+
+.donut::after {
+  content: "";
+  position: absolute;
+  inset: 34px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.legendList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #102033;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.legendLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.blue {
+  background: #156eea;
+}
+
+.cyan {
+  background: #13bfd3;
+}
+
+.purple {
+  background: #7c3aed;
+}
+
+.green {
+  background: #20c997;
+}
+
+.gray {
+  background: #94a3b8;
+}
+
+.tatList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tatItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 14px;
+  color: #102033;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.tatItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tatValue {
+  color: #102033;
+  font-weight: 900;
+}
+
+@media (max-width: 1180px) {
+  .statsGrid,
+  .bottomGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .donutWrap {
+    grid-template-columns: 1fr;
+  }
+
+  .donut {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .headerRow {
+    flex-direction: column;
+  }
+
+  .dateSelect {
+    width: 100%;
+  }
+
+  .statsGrid,
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel,
+  .statCard {
+    padding: 18px;
+  }
+}

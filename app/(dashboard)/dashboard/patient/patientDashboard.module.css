@@ -1,0 +1,246 @@
+.page {
+  width: 100%;
+  max-width: 760px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #13bfd3, #156eea);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.kicker {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.title {
+  margin: 4px 0 0;
+  color: #102033;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.dateSelect {
+  height: 44px;
+  min-width: 150px;
+  border: 1px solid #dce8f6;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  color: #102033;
+  font-size: 13px;
+  font-weight: 800;
+  outline: none;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.statCard {
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 18px;
+  box-shadow: 0 18px 44px rgba(21, 110, 234, 0.08);
+}
+
+.statLabel {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.statValue {
+  margin: 0;
+  color: #102033;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.statTrend {
+  margin: 9px 0 0;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.panel {
+  border: 1px solid #ffffff;
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 18px 44px rgba(21, 110, 234, 0.08);
+}
+
+.panelTitle {
+  margin: 0 0 18px;
+  color: #102033;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.patientCard {
+  border: 1px solid #edf2f7;
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.patientCardTitle {
+  margin: 0 0 8px;
+  color: #102033;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.patientCardText {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.patientCardFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  color: #156eea;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.linkButton {
+  display: inline-flex;
+  margin-top: 16px;
+  border: none;
+  background: transparent;
+  color: #156eea;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.medicineRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 14px 0;
+}
+
+.medicineRow:last-child {
+  border-bottom: none;
+}
+
+.medicineName {
+  margin: 0;
+  color: #102033;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.medicineDose {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.billRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 14px 0;
+}
+
+.billRow:last-child {
+  border-bottom: none;
+}
+
+.billTitle {
+  margin: 0;
+  color: #102033;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.billText {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.billAmount {
+  color: #102033;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .headerRow {
+    flex-direction: column;
+  }
+
+  .dateSelect {
+    width: 100%;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel,
+  .statCard {
+    padding: 18px;
+  }
+}
