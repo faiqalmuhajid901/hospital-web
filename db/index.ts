@@ -5,7 +5,7 @@ import * as schema from "./schema";
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error("Connection_String is not defined");
+  throw new Error("DATABASE_URL is not defined");
 }
 
 const client = postgres(connectionString, {
