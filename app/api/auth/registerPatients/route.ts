@@ -45,8 +45,6 @@ const registerSchema = z
 
     confirmPassword: z.string(),
 
-    
-
     terms: z.boolean().refine((value) => value === true, {
       message: "Syarat dan Ketentuan wajib disetujui.",
     }),
