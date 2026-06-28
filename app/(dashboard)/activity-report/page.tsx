@@ -1,363 +1,148 @@
-import { DashboardShell } from "../../components/dashboard/DashboardShell";
-import styles from "./activityReport.module.css";
+"use client";
 
-const summaryCards = [
-  {
-    label: "Total Aktivitas",
-    value: "1.258",
-    trend: "+12.8% dari periode sebelumnya",
-    type: "positive",
-  },
-  {
-    label: "User Aktif",
-    value: "46",
-    trend: "+6.3% dari periode sebelumnya",
-    type: "positive",
-  },
-  {
-    label: "Aktivitas Harian Rata-rata",
-    value: "62,9",
-    trend: "+8.7% dari periode sebelumnya",
-    type: "positive",
-  },
-  {
-    label: "Login Berhasil",
-    value: "312",
-    trend: "+10.1% dari periode sebelumnya",
-    type: "positive",
-  },
-  {
-    label: "Login Gagal",
-    value: "18",
-    trend: "-5.3% dari periode sebelumnya",
-    type: "negative",
-  },
+import { useMemo, useState } from "react";
+import { DashboardShell } from "@/app/components/dashboard/DashboardShell";
+
+type ReportRow = {
+  module: string;
+  total: number;
+  success: number;
+  warning: number;
+  failed: number;
+};
+
+const baseRows: ReportRow[] = [
+  { module: "Auth", total: 320, success: 285, warning: 12, failed: 23 },
+  { module: "Pasien", total: 214, success: 205, warning: 6, failed: 3 },
+  { module: "Farmasi", total: 142, success: 136, warning: 4, failed: 2 },
+  { module: "Laboratorium", total: 98, success: 95, warning: 2, failed: 1 },
+  { module: "Role & Permission", total: 63, success: 54, warning: 7, failed: 2 },
 ];
 
-const moduleActivities = [
-  { module: "Pasien", value: 330, width: "100%" },
-  { module: "Pendaftaran", value: 260, width: "78%" },
-  { module: "Rawat Jalan", value: 210, width: "64%" },
-  { module: "Billing", value: 180, width: "55%" },
-  { module: "Farmasi", value: 150, width: "45%" },
-  { module: "Laboratorium", value: 80, width: "25%" },
-  { module: "Laporan", value: 28, width: "9%" },
-];
-
-const topUsers = [
-  {
-    no: 1,
-    user: "dr. Azita Putri",
-    role: "Dokter",
-    total: 356,
-    percent: "28.3%",
-  },
-  {
-    no: 2,
-    user: "Siti Nurhaliza",
-    role: "Perawat",
-    total: 245,
-    percent: "19.5%",
-  },
-  {
-    no: 3,
-    user: "Budi Santoso",
-    role: "Admin",
-    total: 198,
-    percent: "15.8%",
-  },
-  {
-    no: 4,
-    user: "Rina Marlina",
-    role: "Kasir",
-    total: 152,
-    percent: "12.1%",
-  },
-  {
-    no: 5,
-    user: "Andi Wijaya",
-    role: "Farmasi",
-    total: 98,
-    percent: "7.8%",
-  },
-];
-
-const activityDistribution = [
-  { label: "Lihat Data", value: "53%", colorClass: styles.blue },
-  { label: "Tambah Data", value: "16%", colorClass: styles.cyan },
-  { label: "Ubah Data", value: "17%", colorClass: styles.green },
-  { label: "Hapus Data", value: "8%", colorClass: styles.purple },
-  { label: "Lainnya", value: "6%", colorClass: styles.gray },
-];
+const periodOptions = ["Hari ini", "7 Hari", "30 Hari", "90 Hari"] as const;
 
 export default function ActivityReportPage() {
+  const [period, setPeriod] = useState<(typeof periodOptions)[number]>("7 Hari");
+  const [moduleKeyword, setModuleKeyword] = useState("");
+
+  const rows = useMemo(() => {
+    const keyword = moduleKeyword.trim().toLowerCase();
+    const multiplier = period === "Hari ini" ? 0.22 : period === "7 Hari" ? 1 : period === "30 Hari" ? 3.4 : 8.2;
+
+    return baseRows
+      .filter((row) => !keyword || row.module.toLowerCase().includes(keyword))
+      .map((row) => ({
+        ...row,
+        total: Math.round(row.total * multiplier),
+        success: Math.round(row.success * multiplier),
+        warning: Math.round(row.warning * multiplier),
+        failed: Math.round(row.failed * multiplier),
+      }));
+  }, [period, moduleKeyword]);
+
+  const summary = useMemo(() => {
+    return rows.reduce(
+      (acc, row) => ({
+        total: acc.total + row.total,
+        success: acc.success + row.success,
+        warning: acc.warning + row.warning,
+        failed: acc.failed + row.failed,
+      }),
+      { total: 0, success: 0, warning: 0, failed: 0 }
+    );
+  }, [rows]);
+
+  function handleExport() {
+    const header = ["Modul", "Total", "Berhasil", "Peringatan", "Gagal"];
+    const csv = [header, ...rows.map((row) => [row.module, row.total, row.success, row.warning, row.failed])]
+      .map((row) => row.map(String).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `activity-report-${period.toLowerCase().replaceAll(" ", "-")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
-    <DashboardShell title="Laporan Aktivitas User" activeMenu="activity-report">
-      <div className={styles.page}>
-        <h2 className={styles.title}>Laporan Aktivitas User</h2>
+    <DashboardShell title="Laporan Aktivitas" activeMenu="activity-report">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Laporan Aktivitas</h2>
+          <p className="mt-1 text-sm font-semibold text-slate-500">
+            Ringkasan aktivitas sistem berdasarkan modul dan periode.
+          </p>
+        </div>
 
-        <section className={styles.card}>
-          <div className={styles.filterGrid}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label} htmlFor="period">
-                Periode
-              </label>
-              <input
-                id="period"
-                type="text"
-                className={styles.input}
-                defaultValue="01/05/2024 - 20/05/2024"
-              />
+        <div className="grid gap-4 md:grid-cols-4">
+          {[
+            ["Total Aktivitas", summary.total],
+            ["Berhasil", summary.success],
+            ["Peringatan", summary.warning],
+            ["Gagal", summary.failed],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-wide text-slate-400">{label}</p>
+              <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
             </div>
+          ))}
+        </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.label} htmlFor="user">
-                User
-              </label>
-              <select id="user" className={styles.select} defaultValue="">
-                <option value="">Semua User</option>
-                <option value="azita">dr. Azita Putri</option>
-                <option value="siti">Siti Nurhaliza</option>
-                <option value="budi">Budi Santoso</option>
-              </select>
-            </div>
+        <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-[1fr_220px_auto]">
+          <input
+            value={moduleKeyword}
+            onChange={(event) => setModuleKeyword(event.target.value)}
+            placeholder="Cari modul..."
+            className="h-12 rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#156eea] focus:ring-4 focus:ring-blue-100"
+          />
+          <select
+            value={period}
+            onChange={(event) => setPeriod(event.target.value as typeof period)}
+            className="h-12 rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#156eea] focus:ring-4 focus:ring-blue-100"
+          >
+            {periodOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+          <button
+            type="button"
+            onClick={handleExport}
+            className="h-12 rounded-2xl bg-[#156eea] px-5 text-sm font-black text-white shadow-lg shadow-blue-100 transition hover:bg-[#075acb]"
+          >
+            Export CSV
+          </button>
+        </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.label} htmlFor="module">
-                Modul
-              </label>
-              <select id="module" className={styles.select} defaultValue="">
-                <option value="">Semua Modul</option>
-                <option value="pasien">Pasien</option>
-                <option value="pendaftaran">Pendaftaran</option>
-                <option value="billing">Billing</option>
-              </select>
-            </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="space-y-4">
+            {rows.map((row) => {
+              const successRate = row.total ? Math.round((row.success / row.total) * 100) : 0;
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.label} htmlFor="action">
-                Aksi
-              </label>
-              <select id="action" className={styles.select} defaultValue="">
-                <option value="">Semua Aksi</option>
-                <option value="view">Lihat Data</option>
-                <option value="create">Tambah Data</option>
-                <option value="update">Ubah Data</option>
-                <option value="delete">Hapus Data</option>
-              </select>
-            </div>
-
-            <button type="button" className={styles.primaryButton}>
-              Tampilkan Laporan
-            </button>
-
-            <button type="button" className={styles.secondaryButton}>
-              ⬇ Export Excel
-            </button>
-          </div>
-
-          <div className={styles.summaryGrid}>
-            {summaryCards.map((item) => (
-              <div key={item.label} className={styles.summaryCard}>
-                <p className={styles.summaryLabel}>{item.label}</p>
-                <p className={styles.summaryValue}>{item.value}</p>
-                <p
-                  className={
-                    item.type === "positive"
-                      ? styles.summaryTrendPositive
-                      : styles.summaryTrendNegative
-                  }
-                >
-                  {item.trend}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.chartGrid}>
-            <div className={styles.chartCard}>
-              <h3 className={styles.chartTitle}>Aktivitas per Hari</h3>
-
-              <svg
-                className={styles.lineChart}
-                viewBox="0 0 620 260"
-                role="img"
-                aria-label="Grafik aktivitas per hari"
-              >
-                <line
-                  x1="40"
-                  y1="40"
-                  x2="600"
-                  y2="40"
-                  className={styles.gridLine}
-                />
-                <line
-                  x1="40"
-                  y1="90"
-                  x2="600"
-                  y2="90"
-                  className={styles.gridLine}
-                />
-                <line
-                  x1="40"
-                  y1="140"
-                  x2="600"
-                  y2="140"
-                  className={styles.gridLine}
-                />
-                <line
-                  x1="40"
-                  y1="190"
-                  x2="600"
-                  y2="190"
-                  className={styles.gridLine}
-                />
-                <line
-                  x1="40"
-                  y1="230"
-                  x2="600"
-                  y2="230"
-                  className={styles.gridLine}
-                />
-
-                <text x="8" y="44" className={styles.axisText}>
-                  100
-                </text>
-                <text x="15" y="94" className={styles.axisText}>
-                  75
-                </text>
-                <text x="15" y="144" className={styles.axisText}>
-                  50
-                </text>
-                <text x="15" y="194" className={styles.axisText}>
-                  25
-                </text>
-                <text x="22" y="232" className={styles.axisText}>
-                  0
-                </text>
-
-                <text x="40" y="252" className={styles.axisText}>
-                  01 Mei
-                </text>
-                <text x="185" y="252" className={styles.axisText}>
-                  05 Mei
-                </text>
-                <text x="330" y="252" className={styles.axisText}>
-                  09 Mei
-                </text>
-                <text x="465" y="252" className={styles.axisText}>
-                  13 Mei
-                </text>
-                <text x="560" y="252" className={styles.axisText}>
-                  20 Mei
-                </text>
-
-                <path
-                  className={styles.areaPath}
-                  d="M40 178 L70 166 L100 110 L130 128 L160 122 L190 150 L220 118 L250 138 L280 128 L310 92 L340 116 L370 152 L400 148 L430 142 L460 78 L490 100 L520 92 L550 128 L580 70 L600 104 L600 230 L40 230 Z"
-                />
-
-                <path
-                  className={styles.linePath}
-                  d="M40 178 L70 166 L100 110 L130 128 L160 122 L190 150 L220 118 L250 138 L280 128 L310 92 L340 116 L370 152 L400 148 L430 142 L460 78 L490 100 L520 92 L550 128 L580 70 L600 104"
-                />
-
-                {[40, 100, 160, 220, 310, 460, 580, 600].map((x, index) => {
-                  const y = [178, 110, 122, 118, 92, 78, 70, 104][index];
-
-                  return (
-                    <circle
-                      key={`${x}-${y}`}
-                      cx={x}
-                      cy={y}
-                      r="5"
-                      className={styles.dot}
-                    />
-                  );
-                })}
-              </svg>
-            </div>
-
-            <div className={styles.chartCard}>
-              <h3 className={styles.chartTitle}>Aktivitas per Modul</h3>
-
-              <div className={styles.barList}>
-                {moduleActivities.map((item) => (
-                  <div key={item.module} className={styles.barRow}>
-                    <span className={styles.barLabel}>{item.module}</span>
-                    <div className={styles.barTrack}>
-                      <div
-                        className={styles.barFill}
-                        style={{ width: item.width }}
-                      />
+              return (
+                <div key={row.module} className="rounded-2xl border border-slate-100 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-black text-slate-900">{row.module}</h3>
+                      <p className="text-xs font-semibold text-slate-500">{row.total} aktivitas dalam periode {period}</p>
                     </div>
-                    <span className={styles.barValue}>{item.value}</span>
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[#156eea]">
+                      Success rate {successRate}%
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.bottomGrid}>
-            <div className={styles.tableCard}>
-              <h3 className={styles.chartTitle}>
-                Top 10 User dengan Aktivitas Terbanyak
-              </h3>
-
-              <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>No</th>
-                      <th>User</th>
-                      <th>Role</th>
-                      <th>Total Aktivitas</th>
-                      <th>Persentase</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {topUsers.map((item) => (
-                      <tr key={item.no}>
-                        <td>{item.no}</td>
-                        <td>{item.user}</td>
-                        <td>{item.role}</td>
-                        <td>{item.total}</td>
-                        <td>{item.percent}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className={styles.donutCard}>
-              <h3 className={styles.chartTitle}>Distribusi Aktivitas</h3>
-
-              <div className={styles.donutContent}>
-                <div className={styles.donut} />
-
-                <div className={styles.legendList}>
-                  {activityDistribution.map((item) => (
-                    <div key={item.label} className={styles.legendItem}>
-                      <span className={styles.legendLeft}>
-                        <span
-                          className={`${styles.legendDot} ${item.colorClass}`}
-                        />
-                        {item.label}
-                      </span>
-                      <strong>{item.value}</strong>
-                    </div>
-                  ))}
+                  <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-[#156eea]" style={{ width: `${successRate}%` }} />
+                  </div>
+                  <div className="mt-3 grid gap-2 text-xs font-bold text-slate-500 md:grid-cols-3">
+                    <span>Berhasil: {row.success}</span>
+                    <span>Peringatan: {row.warning}</span>
+                    <span>Gagal: {row.failed}</span>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        </section>
-
-        <p className={styles.footerText}>
-          © 2024 Medisystem HIS. All rights reserved.
-        </p>
+        </div>
       </div>
     </DashboardShell>
   );

@@ -1,82 +1,113 @@
+"use client";
+
 import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AuthShell } from "@/app/components/auth/AuthShell";
+import { FormMessage } from "@/app/components/auth/FormMessage";
 import { PasswordField } from "@/app/components/auth/PasswordField";
 
+type LoginForm = {
+  identifier: string;
+  password: string;
+};
+
 export default function LoginPage() {
+  const router = useRouter();
+  const [form, setForm] = useState<LoginForm>({
+    identifier: "",
+    password: "",
+  });
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<"error" | "success" | "info">("info");
+  const [loading, setLoading] = useState(false);
+
+  function updateField<K extends keyof LoginForm>(field: K, value: LoginForm[K]) {
+    setForm((current) => ({ ...current, [field]: value }));
+    setMessage(null);
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!form.identifier.trim() || !form.password) {
+      setMessageType("error");
+      setMessage("Username/email dan password wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Backend login belum terlihat di repo. Register API yang sudah terlihat adalah /api/auth/register.
+      // Jika endpoint login sudah dibuat, ganti simulasi ini menjadi fetch("/api/auth/login", ...).
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
+
+      setMessageType("success");
+      setMessage("Login frontend berhasil. Mengalihkan ke dashboard...");
+      window.setTimeout(() => router.push("/dashboard/admin"), 600);
+    } catch {
+      setMessageType("error");
+      setMessage("Gagal login. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AuthShell
-      title="Selamat Datang 👋"
-      description="Masuk ke dashboard rumah sakit untuk mengelola pasien, dokter, jadwal, antrean, apotek, pembayaran, dan laporan operasional."
+      title="Masuk Akun"
+      description="Masuk untuk mengakses dashboard sistem rumah sakit."
     >
-      <form className="space-y-5">
-        <label className="block">
-          <span className="mb-2 block text-xs font-bold text-slate-700">
-            Email atau Username
-          </span>
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <FormMessage type={messageType} message={message} />
+
+        <div className="space-y-2">
+          <label htmlFor="identifier" className="block text-sm font-bold text-slate-700">
+            Username atau Email
+          </label>
           <input
-            type="text"
-            name="identity"
-            placeholder="contoh@rumahsakit.ac.id"
-            className="h-12 w-full rounded-xl border border-[#dce8f6] bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-[#156eea] focus:ring-4 focus:ring-blue-100"
+            id="identifier"
+            name="identifier"
+            value={form.identifier}
+            onChange={(event) => updateField("identifier", event.target.value)}
+            placeholder="username atau email"
+            className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#156eea] focus:ring-4 focus:ring-blue-100"
           />
-        </label>
+        </div>
 
-        <PasswordField id="password" label="Password" />
+        <PasswordField
+          id="password"
+          name="password"
+          label="Password"
+          value={form.password}
+          onChange={(event) => updateField("password", event.target.value)}
+          autoComplete="current-password"
+        />
 
-        <div className="flex items-center justify-between gap-4 text-xs">
-          <label className="flex items-center gap-2 font-medium text-slate-500">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-slate-300 accent-[#156eea]"
-            />
+        <div className="flex items-center justify-between text-sm">
+          <label className="flex items-center gap-2 font-semibold text-slate-600">
+            <input type="checkbox" className="h-4 w-4 rounded border-slate-300 accent-[#156eea]" />
             Ingat saya
           </label>
 
-          <Link
-            href="/forgot-password"
-            className="font-bold text-[#156eea] hover:text-[#075acb]"
-          >
+          <Link href="/forgot-password" className="font-black text-[#156eea] hover:underline">
             Lupa password?
           </Link>
         </div>
 
         <button
-          type="button"
-          className="h-12 w-full rounded-xl bg-gradient-to-r from-[#156eea] to-[#075acb] text-sm font-extrabold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-xl"
+          type="submit"
+          disabled={loading}
+          className="h-12 w-full rounded-2xl bg-[#156eea] px-5 text-sm font-black text-white shadow-lg shadow-blue-200 transition hover:bg-[#075acb] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Masuk
+          {loading ? "Memproses..." : "Masuk"}
         </button>
 
-        <div className="relative py-1 text-center">
-          <span className="relative z-10 bg-white px-3 text-xs font-semibold text-slate-400">
-            atau masuk dengan
-          </span>
-          <div className="absolute left-0 top-1/2 h-px w-full bg-slate-100" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            className="h-11 rounded-xl border border-[#dce8f6] bg-white text-xs font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
-          >
-            SSO Hospital
-          </button>
-
-          <button
-            type="button"
-            className="h-11 rounded-xl border border-[#dce8f6] bg-white text-xs font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
-          >
-            Google
-          </button>
-        </div>
-
-        <p className="text-center text-xs font-medium text-slate-500">
+        <p className="text-center text-sm font-semibold text-slate-600">
           Belum punya akun?{" "}
-          <Link
-            href="/register"
-            className="font-extrabold text-[#156eea] hover:text-[#075acb]"
-          >
-            Daftar sekarang
+          <Link href="/register" className="font-black text-[#156eea] hover:underline">
+            Daftar di sini
           </Link>
         </p>
       </form>

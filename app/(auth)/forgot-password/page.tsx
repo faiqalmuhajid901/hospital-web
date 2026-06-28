@@ -1,45 +1,101 @@
+"use client";
+
 import Link from "next/link";
+import { FormEvent, useMemo, useState } from "react";
 import { AuthShell } from "@/app/components/auth/AuthShell";
+import { FormMessage } from "@/app/components/auth/FormMessage";
+
+type MessageType = "error" | "success" | "info";
+
+function isValidEmail(value: string) {
+  return /^\S+@\S+\.\S+$/.test(value.trim());
+}
 
 export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<MessageType>("info");
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const emailError = useMemo(() => {
+    if (!emailTouched) return null;
+    if (!email.trim()) return "Email wajib diisi.";
+    if (!isValidEmail(email)) return "Format email tidak valid.";
+    return null;
+  }, [email, emailTouched]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setEmailTouched(true);
+
+    if (!email.trim() || !isValidEmail(email)) {
+      setMessageType("error");
+      setMessage("Masukkan email yang valid terlebih dahulu.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      // TODO: ketika backend tersedia, ganti simulasi ini dengan:
+      // await fetch("/api/auth/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) })
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
+
+      setMessageType("success");
+      setMessage("Jika email terdaftar, instruksi reset password akan dikirim ke email tersebut.");
+    } catch {
+      setMessageType("error");
+      setMessage("Gagal mengirim permintaan reset password. Coba lagi beberapa saat lagi.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AuthShell
       title="Lupa Password"
-      mode="mail"
-      description="Masukkan email akun Anda. Sistem akan mengirimkan tautan pemulihan untuk membuat password baru."
+      description="Masukkan email akun untuk menerima instruksi reset password."
     >
-      <form className="space-y-5">
-        <p className="rounded-2xl bg-blue-50 px-4 py-3 text-sm leading-6 text-slate-600">
-          Masukkan email yang terdaftar pada akun Medisystem HIS. Tautan reset
-          password akan dikirimkan ke email Anda.
-        </p>
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <FormMessage type={messageType} message={message} />
 
-        <label className="block">
-          <span className="mb-2 block text-xs font-bold text-slate-700">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-bold text-slate-700">
             Email
-          </span>
+          </label>
           <input
-            type="email"
+            id="email"
             name="email"
-            placeholder="email@rumahsakit.ac.id"
-            className="h-12 w-full rounded-xl border border-[#dce8f6] bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-[#156eea] focus:ring-4 focus:ring-blue-100"
+            type="email"
+            value={email}
+            onBlur={() => setEmailTouched(true)}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              setMessage(null);
+            }}
+            placeholder="nama@hospital.com"
+            aria-invalid={Boolean(emailError)}
+            className={`h-12 w-full rounded-2xl border bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#156eea] focus:ring-4 focus:ring-blue-100 ${
+              emailError ? "border-red-300" : "border-slate-200"
+            }`}
           />
-        </label>
+          {emailError ? <p className="text-xs font-semibold text-red-600">{emailError}</p> : null}
+        </div>
 
         <button
-          type="button"
-          className="h-12 w-full rounded-xl bg-gradient-to-r from-[#156eea] to-[#075acb] text-sm font-extrabold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-xl"
+          type="submit"
+          disabled={loading}
+          className="h-12 w-full rounded-2xl bg-[#156eea] px-5 text-sm font-black text-white shadow-lg shadow-blue-200 transition hover:bg-[#075acb] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Kirim Tautan Reset
+          {loading ? "Mengirim..." : "Kirim Instruksi Reset"}
         </button>
 
-        <p className="text-center text-xs font-medium text-slate-500">
+        <p className="text-center text-sm font-semibold text-slate-600">
           Ingat password?{" "}
-          <Link
-            href="/login"
-            className="font-extrabold text-[#156eea] hover:text-[#075acb]"
-          >
-            Kembali ke halaman login
+          <Link href="/login" className="font-black text-[#156eea] hover:underline">
+            Masuk di sini
           </Link>
         </p>
       </form>

@@ -31,6 +31,38 @@
   padding: 0 34px;
   box-shadow: 0 8px 24px rgba(15, 52, 96, 0.04);
   backdrop-filter: blur(18px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.menuButton {
+  height: 42px;
+  width: 42px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06);
+}
+
+.menuButton span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: #102033;
 }
 
 .topbarKicker {
@@ -54,6 +86,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.actionWrapper {
+  position: relative;
 }
 
 .iconButton {
@@ -90,6 +126,7 @@
   background: #ffffff;
   padding: 6px 14px 6px 6px;
   box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06);
+  cursor: pointer;
 }
 
 .userAvatarSmall {
@@ -103,6 +140,12 @@
   color: #ffffff;
   font-size: 13px;
   font-weight: 900;
+}
+
+.userText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .userName {
@@ -119,6 +162,54 @@
   color: #94a3b8;
 }
 
+.dropdown,
+.userDropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  z-index: 50;
+  min-width: 220px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 18px 50px rgba(15, 52, 96, 0.16);
+}
+
+.dropdownTitle {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #102033;
+}
+
+.dropdownText {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.userDropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userDropdown a {
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #334155;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.userDropdown a:hover {
+  background: #f1f5f9;
+  color: #156eea;
+}
+
 .content {
   flex: 1;
   width: 100%;
@@ -127,7 +218,15 @@
 
 @media (max-width: 720px) {
   .topbar {
-    padding: 0 20px;
+    padding: 0 18px;
+  }
+
+  .topbarTitle {
+    font-size: 18px;
+  }
+
+  .topbarKicker {
+    font-size: 10px;
   }
 
   .userChip {
@@ -135,6 +234,6 @@
   }
 
   .content {
-    padding: 24px;
+    padding: 24px 18px;
   }
 }
