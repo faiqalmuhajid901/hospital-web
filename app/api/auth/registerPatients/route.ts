@@ -132,8 +132,7 @@ export async function POST(req: Request) {
           status: users.status,
           role: users.role
         });
-
-
+    return insertedUsers[0];
     });
 
     return NextResponse.json(
@@ -144,11 +143,13 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[REGISTER_ERROR]", error);
-
-    return NextResponse.json(
-      { message: "Terjadi kesalahan server." },
-      { status: 500 }
-    );
-  }
+  console.error("FULL ERROR:", error);
+  return NextResponse.json(
+    {
+      message: "Terjadi kesalahan server.",
+      error: error instanceof Error ? error.message : error,
+    },
+    { status: 500 }
+  );
+}
 }

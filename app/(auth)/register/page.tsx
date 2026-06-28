@@ -105,7 +105,7 @@ export default function RegisterPage() {
     setErrors({});
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("./api/auth/registerPatients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -114,9 +114,11 @@ export default function RegisterPage() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           username: form.username.trim().toLowerCase(),
+          password: form.password.trim(),
+          confirmPassword: form.confirmPassword.trim(),
+          terms: form.terms
         }),
       });
-
       const payload = (await response.json().catch(() => ({}))) as RegisterResponse;
 
       if (!response.ok) {
