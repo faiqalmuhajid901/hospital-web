@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { users, roles, userRoles } from "@/db/section/auth";
+import { users } from "@/db/section/auth";
 
 export const runtime = "nodejs";
 
@@ -45,9 +45,7 @@ const registerSchema = z
 
     confirmPassword: z.string(),
 
-    role: z.enum(["Super Admin","admin", "dokter", "perawat", "apoteker", "pasien"], {
-      message: "Role tidak valid.",
-    }),
+    
 
     terms: z.boolean().refine((value) => value === true, {
       message: "Syarat dan Ketentuan wajib disetujui.",
@@ -109,24 +107,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const selectedRole = await db
-      .select({
-        id: roles.id,
-        name: roles.name,
-      })
-      .from(roles)
-      .where(eq(roles.name, data.role))
-      .limit(1);
-
-    if (selectedRole.length === 0) {
-      return NextResponse.json(
-        {
-          message:
-            "Role belum tersedia di database. Seed data role terlebih dahulu.",
-        },
-        { status: 400 }
-      );
-    }
+    
 
     const passwordHash = await bcrypt.hash(data.password, 12);
 
@@ -140,6 +121,7 @@ export async function POST(req: Request) {
           phone: data.phone,
           password: passwordHash,
           status: "active",
+          role: "pasien"
         })
         .returning({
           id: users.id,
@@ -148,19 +130,10 @@ export async function POST(req: Request) {
           username: users.username,
           phone: users.phone,
           status: users.status,
+          role: users.role
         });
 
-      const newUser = insertedUsers[0];
 
-      await tx.insert(userRoles).values({
-        userId: newUser.id,
-        roleId: selectedRole[0].id,
-      });
-
-      return {
-        ...newUser,
-        role: selectedRole[0].name,
-      };
     });
 
     return NextResponse.json(
