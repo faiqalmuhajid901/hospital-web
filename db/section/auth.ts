@@ -20,7 +20,7 @@ export const users = pgTable(
     username: varchar("username", {length: 255}),
     email: varchar("email", { length: 255 }),
     password: varchar("password", { length: 255 }),
-    test: varchar("test", {length: 255}),
+    status : varchar("status", {length: 50}),
     phone: varchar("phone", { length: 50 }),
     emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true, mode: "date" }),
     createdAt: createdAt(),

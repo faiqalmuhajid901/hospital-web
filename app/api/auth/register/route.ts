@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { users, roles, userRoles } from "@/db/schema";
+import { users, roles, userRoles } from "@/db/section/auth";
 
 export const runtime = "nodejs";
 
@@ -45,7 +45,7 @@ const registerSchema = z
 
     confirmPassword: z.string(),
 
-    role: z.enum(["admin", "dokter", "perawat", "apoteker", "pasien"], {
+    role: z.enum(["Super Admin","admin", "dokter", "perawat", "apoteker", "pasien"], {
       message: "Role tidak valid.",
     }),
 

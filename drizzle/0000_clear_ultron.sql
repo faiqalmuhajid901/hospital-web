@@ -29,7 +29,7 @@ CREATE TABLE "users" (
 	"username" varchar(255),
 	"email" varchar(255),
 	"password" varchar(255),
-	"test" varchar(255),
+	"status" varchar(50),
 	"phone" varchar(50),
 	"email_verified_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now(),
