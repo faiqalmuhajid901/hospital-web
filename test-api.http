@@ -1,23 +1,23 @@
-POST http://localhost:3000/api/auth/registerPatients
-Content-Type: application/json
-
-{
-  "name": "Thegarmj1",
-  "email": "thegarmj1@gmail.com",
-  "phone": "081234567890",
-  "username": "mj1231",
-  "password": "password1231",
-  "confirmPassword": "password123",
-  "role": "pasien",
-  "terms": true
-}
-
-
-kA8aj9wfss!6LL5
-# POST http://localhost:3000/api/auth/login
+# # POST http://localhost:3000/api/auth/registerPatients
 # Content-Type: application/json
 
 # {
-#   "identity": "mj123",
-#   "password": "password123"
+#   "name": "Faiq Ganteng",
+#   "email": "faiq123@gmail.com",
+#   "phone": "081234567890",
+#   "username": "faiqganteng22",
+#   "password": "password1231",
+#   "confirmPassword": "password1231",
+#   "role": "pasien",
+#   "terms": true
 # }
+
+
+
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "identity": "faiqganteng22",
+  "password": "password1231"
+}

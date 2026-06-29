@@ -1,75 +1,79 @@
 import { NextResponse } from "next/server";
-import { or, eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 import { db } from "@/db";
 import { users } from "@/db/section/auth";
 
 export const runtime = "nodejs";
 
-const loginEmployeeSchema = z.object({
-  identity: z.string().min(1, "Username atau email wajib diisi."),
-  password: z.string().min(1, "Password wajib diisi."),
+type OtpRecord = {
+  email: string;
+  userId: number | string;
+  otpHash: string;
+  expiresAt: number;
+  attempts: number;
+};
+
+const globalStore = globalThis as typeof globalThis & {
+  __hospitalEmployeeOtpStore?: Map<string, OtpRecord>;
+};
+
+const otpStore =
+  globalStore.__hospitalEmployeeOtpStore ??
+  (globalStore.__hospitalEmployeeOtpStore = new Map<string, OtpRecord>());
+
+const verifyOtpSchema = z.object({
+  email: z
+    .string()
+    .email("Format email tidak valid.")
+    .transform((value) => value.trim().toLowerCase()),
+  otp: z
+    .string()
+    .regex(/^\d{6}$/, "OTP harus 6 digit angka."),
+  accountType: z.literal("employee").optional(),
 });
 
 function normalizeRole(role: string | null | undefined) {
   return role?.trim().toLowerCase();
 }
 
-function isEmployeeRole(role: string | null | undefined) {
+function isPatientRole(role: string | null | undefined) {
   const normalizedRole = normalizeRole(role);
 
-  if (!normalizedRole) return false;
-
-  return [
-    "dokter",
-    "doctor",
-    "perawat",
-    "nurse",
-    "apoteker",
-    "pharmacist",
-    "laboratorium",
-    "laboratory",
-    "lab",
-    "akuntan",
-    "accountant",
-    "admin",
-    "super_admin",
-    "super admin",
-    "employee",
-    "pegawai",
-  ].includes(normalizedRole);
+  return normalizedRole === "patient" || normalizedRole === "pasien";
 }
 
 function getRedirectByRole(role: string | null | undefined) {
   const normalizedRole = normalizeRole(role);
 
   switch (normalizedRole) {
-    case "dokter":
-    case "doctor":
-      return "/dashboard/doctor";
-
-    case "perawat":
-    case "nurse":
-      return "/dashboard/nurse";
-
-    case "apoteker":
-    case "pharmacist":
-      return "/dashboard/pharmacy";
-
-    case "laboratorium":
-    case "laboratory":
-    case "lab":
-      return "/dashboard/laboratory";
-
-    case "akuntan":
-    case "accountant":
-      return "/dashboard/billing";
-
-    case "admin":
     case "super_admin":
     case "super admin":
+    case "admin":
+      return "/dashboard/admin";
+
+    case "doctor":
+    case "dokter":
+      return "/dashboard/doctor";
+
+    case "nurse":
+    case "perawat":
+      return "/dashboard/nurse";
+
+    case "pharmacist":
+    case "apoteker":
+      return "/dashboard/pharmacy";
+
+    case "laboratory":
+    case "laboratorium":
+      return "/dashboard/laboratory";
+
+    case "patient":
+    case "pasien":
+      return "/dashboard/patient";
+
     case "employee":
     case "pegawai":
       return "/dashboard/admin";
@@ -82,20 +86,66 @@ function getRedirectByRole(role: string | null | undefined) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const parsed = loginEmployeeSchema.safeParse(body);
+    const parsed = verifyOtpSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Data login tidak valid.",
+          message: "Data OTP tidak valid.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 422 }
       );
     }
 
-    const identity = parsed.data.identity.trim().toLowerCase();
-    const password = parsed.data.password;
+    const { email, otp } = parsed.data;
+
+    const otpRecord = otpStore.get(email);
+
+    if (!otpRecord) {
+      return NextResponse.json(
+        {
+          message: "OTP tidak ditemukan. Silakan kirim ulang OTP.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (Date.now() > otpRecord.expiresAt) {
+      otpStore.delete(email);
+
+      return NextResponse.json(
+        {
+          message: "OTP sudah kedaluwarsa. Silakan kirim ulang OTP.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (otpRecord.attempts >= 5) {
+      otpStore.delete(email);
+
+      return NextResponse.json(
+        {
+          message: "Terlalu banyak percobaan OTP. Silakan kirim ulang OTP.",
+        },
+        { status: 429 }
+      );
+    }
+
+    otpRecord.attempts += 1;
+    otpStore.set(email, otpRecord);
+
+    const isOtpValid = await bcrypt.compare(otp, otpRecord.otpHash);
+
+    if (!isOtpValid) {
+      return NextResponse.json(
+        {
+          message: "Kode OTP salah.",
+        },
+        { status: 401 }
+      );
+    }
 
     const foundUsers = await db
       .select({
@@ -103,36 +153,41 @@ export async function POST(req: Request) {
         name: users.name,
         username: users.username,
         email: users.email,
-        password: users.password,
-        status: users.status,
         phone: users.phone,
+        status: users.status,
         role: users.role,
       })
       .from(users)
-      .where(or(eq(users.email, identity), eq(users.username, identity)))
+      .where(eq(users.email, email))
       .limit(1);
 
     if (foundUsers.length === 0) {
+      otpStore.delete(email);
+
       return NextResponse.json(
         {
-          message: "Username/email atau password salah.",
+          message: "User tidak ditemukan.",
         },
-        { status: 401 }
+        { status: 404 }
       );
     }
 
     const user = foundUsers[0];
 
-    if (!isEmployeeRole(user.role)) {
+    if (isPatientRole(user.role)) {
+      otpStore.delete(email);
+
       return NextResponse.json(
         {
-          message: "Akun ini bukan akun karyawan rumah sakit.",
+          message: "Login SSO hanya untuk karyawan rumah sakit.",
         },
         { status: 403 }
       );
     }
 
     if (user.status && user.status !== "active") {
+      otpStore.delete(email);
+
       return NextResponse.json(
         {
           message: "Akun tidak aktif. Hubungi administrator.",
@@ -141,16 +196,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        {
-          message: "Username/email atau password salah.",
-        },
-        { status: 401 }
-      );
-    }
+    otpStore.delete(email);
 
     const redirectTo = getRedirectByRole(user.role);
 
@@ -189,11 +235,11 @@ export async function POST(req: Request) {
 
     return response;
   } catch (error) {
-    console.error("[LOGIN_EMPLOYEE_ERROR]", error);
+    console.error("[VERIFY_EMPLOYEE_OTP_ERROR]", error);
 
     return NextResponse.json(
       {
-        message: "Terjadi kesalahan server saat login employee.",
+        message: "Terjadi kesalahan server saat verifikasi OTP.",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }

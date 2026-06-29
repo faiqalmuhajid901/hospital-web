@@ -8,14 +8,14 @@ import { FormMessage } from "@/app/components/auth/FormMessage";
 import { PasswordField } from "@/app/components/auth/PasswordField";
 
 type LoginForm = {
-  identifier: string;
+  identity: string;
   password: string;
 };
 
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState<LoginForm>({
-    identifier: "",
+    identity: "",
     password: "",
   });
   const [message, setMessage] = useState<string | null>(null);
@@ -30,25 +30,41 @@ export default function LoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!form.identifier.trim() || !form.password) {
+    if (!form.identity.trim() || !form.password) {
       setMessageType("error");
       setMessage("Username/email dan password wajib diisi.");
       return;
     }
 
     setLoading(true);
+    setMessage(null);
 
     try {
-      // Backend login belum terlihat di repo. Register API yang sudah terlihat adalah /api/auth/register.
-      // Jika endpoint login sudah dibuat, ganti simulasi ini menjadi fetch("/api/auth/login", ...).
-      await new Promise((resolve) => window.setTimeout(resolve, 700));
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          identity: form.identity.trim(),
+          password: form.password,
+        }),
+      });
 
-      setMessageType("success");
-      setMessage("Login frontend berhasil. Mengalihkan ke dashboard...");
-      window.setTimeout(() => router.push("/dashboard/admin"), 600);
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setMessageType("error");
+        setMessage(payload.message || "Gagal login. 123.");
+        return;
+      }
+      else {
+        setMessageType("success");
+        setMessage("Berhasil login. Mengalihkan...");
+        router.push("/dashboard");
+      }
     } catch {
       setMessageType("error");
-      setMessage("Gagal login. Coba lagi.");
+      setMessage("Gagal login. 456.");
     } finally {
       setLoading(false);
     }
@@ -63,14 +79,14 @@ export default function LoginPage() {
         <FormMessage type={messageType} message={message} />
 
         <div className="space-y-2">
-          <label htmlFor="identifier" className="block text-sm font-bold text-slate-700">
+          <label htmlFor="identity" className="block text-sm font-bold text-slate-700">
             Username atau Email
           </label>
           <input
-            id="identifier"
-            name="identifier"
-            value={form.identifier}
-            onChange={(event) => updateField("identifier", event.target.value)}
+            id="identity"
+            name="identity"
+            value={form.identity}
+            onChange={(event) => updateField("identity", event.target.value)}
             placeholder="username atau email"
             className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#156eea] focus:ring-4 focus:ring-blue-100"
           />
@@ -102,6 +118,14 @@ export default function LoginPage() {
           className="h-12 w-full rounded-2xl bg-[#156eea] px-5 text-sm font-black text-white shadow-lg shadow-blue-200 transition hover:bg-[#075acb] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Memproses..." : "Masuk"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/login-employee")}
+          className="h-12 w-full rounded-2xl bg-[#156eea] px-5 text-sm font-black text-white shadow-lg shadow-blue-200 transition hover:bg-[#075acb] disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          Login SSO
         </button>
 
         <p className="text-center text-sm font-semibold text-slate-600">

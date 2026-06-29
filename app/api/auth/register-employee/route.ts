@@ -45,7 +45,7 @@ const registerSchema = z
 
     confirmPassword: z.string(),
 
-    role: z.enum(["Perawat", "Pasien", "Finance", "Dokter", "Apoteker", "Admin", "Laboratory"],{
+    role: z.enum(["Super Admin", "Perawat", "Pasien", "Finance", "Dokter", "Apoteker", "Admin", "Laboratory"],{
     message: "Role Tidak Tersedia"}
     ),
 
