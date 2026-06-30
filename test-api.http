@@ -11,11 +11,27 @@
 #   "terms": true
 # }
 
+# POST http://localhost:3000/api/auth/register-employee
+# Content-Type: application/json
+
+# {
+#   "name": "Thegarmj1",
+#   "email": "thegarmj@gmail.com",
+#   "phone": "081234567890",
+#   "username": "mj_ganteng",
+#   "password": "password1231",
+#   "confirmPassword": "password1231",
+#   "role": "Super Admin",
+#   "terms": true
+# }
+
 
 # GET http://localhost:3000/api/auth/getUser?page=1&pageSize=2
-
+# Content-Type: application/json
+# Cookie: session_token=80160f1256c432e78762a88d55c650c5faf7ad8154222e0bd76fa275f69a7731
 DELETE http://localhost:3000/api/auth/deleteUser?id=1
-
+Content-Type: application/json
+Cookie: session_token=a5568f2e9a18b363d9d003ca9ef81b884f40698ec16241b76f1f677ca56e5562
 # kA8aj9wfss!6LL5
 # POST http://localhost:3000/api/auth/login
 # Content-Type: application/json

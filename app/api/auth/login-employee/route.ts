@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { or, eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 import { db } from "@/db";
-import { users } from "@/db/section/auth";
+import { users, sessions } from "@/db/schema";
 
 export const runtime = "nodejs";
 
@@ -170,6 +171,31 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
+
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    
+        const now = new Date();
+    
+        // 5. absolute expiry (7 hari)
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 1);
+    
+        // 6. simpan session + lastActivity
+        const insertResult = await db.insert(sessions).values({
+        userId: user.id,
+        token: sessionToken,
+        expiresAt,
+        lastActivity: now,
+      });
+        console.log("Done insert");
+
+        response.cookies.set("session_token", sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 1,
+    });
 
     response.cookies.set("hospital_user_id", String(user.id), {
       httpOnly: true,
