@@ -101,6 +101,13 @@ export async function POST(req: Request) {
       path: "/",
       maxAge: 60 * 60 * 24 * 1,
     });
+    response.cookies.set("hospital_user_role", String(user.role ?? ""), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
 
     return response;
 

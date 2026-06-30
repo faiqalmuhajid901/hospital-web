@@ -176,7 +176,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 8,
+      maxAge: 60 * 60 * 24 * 1,
     });
 
     response.cookies.set("hospital_user_role", String(user.role ?? ""), {
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 8,
+      maxAge: 60 * 60 * 24 * 1,
     });
 
     return response;
