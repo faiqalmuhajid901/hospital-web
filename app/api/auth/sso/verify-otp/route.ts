@@ -1,51 +1,40 @@
+// src/app/api/auth/employee/verify-otp/route.ts
+
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
 import { db } from "@/db";
-import { users, sessions } from "@/db/schema";
+import { users, sessions, otp_requests } from "@/db/schema";
+import {
+  getRedirectByRole,
+  isEmployeeRole,
+} from "@/lib/employee-auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-type OtpRecord = {
-  email: string;
-  userId: number | string;
-  otpHash: string;
-  expiresAt: number;
-  attempts: number;
-};
-
-const globalStore = globalThis as typeof globalThis & {
-  __hospitalEmployeeOtpStore?: Map<string, OtpRecord>;
-};
-
-const otpStore =
-  globalStore.__hospitalEmployeeOtpStore ??
-  (globalStore.__hospitalEmployeeOtpStore = new Map<string, OtpRecord>());
-
 const verifyOtpSchema = z.object({
-  email: z
-    .string()
-    .email("Format email tidak valid.")
-    .transform((value) => value.trim().toLowerCase()),
+  email: z.string().trim().email("Email tidak valid."),
   otp: z
     .string()
+    .trim()
     .regex(/^\d{6}$/, "OTP harus 6 digit angka."),
-  accountType: z.literal("employee").optional(),
 });
 
-function normalizeRole(role: string | null | undefined) {
-  return role?.trim().toLowerCase();
-}
+type FailureBucket = {
+  count: number;
+  resetAt: number;
+};
 
-function isPatientRole(role: string | null | undefined) {
-  const normalizedRole = normalizeRole(role);
+const otpFailureBuckets = new Map<string, FailureBucket>();
 
-  return normalizedRole === "patient" || normalizedRole === "pasien";
-}
+function getOtpPepper() {
+  const pepper = process.env.OTP_PEPPER;
 
+<<<<<<< HEAD
 function getRedirectByRole(role: string | null | undefined) {
   const normalizedRole = normalizeRole(role);
 
@@ -79,7 +68,47 @@ function getRedirectByRole(role: string | null | undefined) {
 
     default:
       return "login";
+=======
+  if (!pepper && process.env.NODE_ENV === "production") {
+    throw new Error("OTP_PEPPER wajib diisi di production.");
+>>>>>>> 99c7eea (complete pull req)
   }
+
+  return pepper ?? "dev-only-change-this-otp-pepper";
+}
+
+function unauthorizedResponse() {
+  return NextResponse.json(
+    {
+      message: "OTP tidak valid atau sudah kedaluwarsa.",
+    },
+    { status: 401 }
+  );
+}
+
+function registerOtpFailure(key: string, ttlMs: number) {
+  const now = Date.now();
+  const existing = otpFailureBuckets.get(key);
+
+  if (!existing || existing.resetAt <= now) {
+    const bucket = {
+      count: 1,
+      resetAt: now + ttlMs,
+    };
+
+    otpFailureBuckets.set(key, bucket);
+
+    return bucket;
+  }
+
+  existing.count += 1;
+  otpFailureBuckets.set(key, existing);
+
+  return existing;
+}
+
+function clearOtpFailure(key: string) {
+  otpFailureBuckets.delete(key);
 }
 
 export async function POST(req: Request) {
@@ -90,59 +119,44 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Data OTP tidak valid.",
+          message: "Data verifikasi OTP tidak valid.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 422 }
       );
     }
 
-    const { email, otp } = parsed.data;
+    const email = parsed.data.email.toLowerCase();
+    const otp = parsed.data.otp;
+    const ip = getClientIp(req);
 
-    const otpRecord = otpStore.get(email);
+    const ipLimit = checkRateLimit(
+      `otp-verify-ip:${ip}`,
+      10,
+      60 * 1000
+    );
 
-    if (!otpRecord) {
+    if (!ipLimit.allowed) {
       return NextResponse.json(
         {
-          message: "OTP tidak ditemukan. Silakan kirim ulang OTP.",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (Date.now() > otpRecord.expiresAt) {
-      otpStore.delete(email);
-
-      return NextResponse.json(
-        {
-          message: "OTP sudah kedaluwarsa. Silakan kirim ulang OTP.",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (otpRecord.attempts >= 5) {
-      otpStore.delete(email);
-
-      return NextResponse.json(
-        {
-          message: "Terlalu banyak percobaan OTP. Silakan kirim ulang OTP.",
+          message: "Terlalu banyak percobaan verifikasi dari IP ini.",
         },
         { status: 429 }
       );
     }
 
-    otpRecord.attempts += 1;
-    otpStore.set(email, otpRecord);
+    const emailLimit = checkRateLimit(
+      `otp-verify-email:${email}`,
+      5,
+      60 * 1000
+    );
 
-    const isOtpValid = await bcrypt.compare(otp, otpRecord.otpHash);
-
-    if (!isOtpValid) {
+    if (!emailLimit.allowed) {
       return NextResponse.json(
         {
-          message: "Kode OTP salah.",
+          message: "Terlalu banyak percobaan OTP untuk email ini.",
         },
-        { status: 401 }
+        { status: 429 }
       );
     }
 
@@ -161,32 +175,16 @@ export async function POST(req: Request) {
       .limit(1);
 
     if (foundUsers.length === 0) {
-      otpStore.delete(email);
-
-      return NextResponse.json(
-        {
-          message: "User tidak ditemukan.",
-        },
-        { status: 404 }
-      );
+      return unauthorizedResponse();
     }
 
     const user = foundUsers[0];
 
-    if (isPatientRole(user.role)) {
-      otpStore.delete(email);
-
-      return NextResponse.json(
-        {
-          message: "Login SSO hanya untuk karyawan rumah sakit.",
-        },
-        { status: 403 }
-      );
+    if (!isEmployeeRole(user.role)) {
+      return unauthorizedResponse();
     }
 
     if (user.status && user.status !== "active") {
-      otpStore.delete(email);
-
       return NextResponse.json(
         {
           message: "Akun tidak aktif. Hubungi administrator.",
@@ -194,31 +192,90 @@ export async function POST(req: Request) {
         { status: 403 }
       );
     }
+
+    const now = new Date();
+
+    const otpRows = await db
+      .select({
+        id: otp_requests.id,
+        email: otp_requests.email,
+        otp_hash: otp_requests.otp_hash,
+        expires_at: otp_requests.expires_at,
+        created_at: otp_requests.created_at,
+      })
+      .from(otp_requests)
+      .where(
+        and(
+          eq(otp_requests.email, email),
+          gt(otp_requests.expires_at, now)
+        )
+      )
+      .orderBy(desc(otp_requests.created_at))
+      .limit(1);
+
+    if (otpRows.length === 0) {
+      return unauthorizedResponse();
+    }
+
+    const otpRow = otpRows[0];
+
+    const failureKey = `otp-failure:${email}:${otpRow.id}`;
+
+    const isOtpValid = await bcrypt.compare(
+      `${otp}:${getOtpPepper()}`,
+      otpRow.otp_hash
+    );
+
+    if (!isOtpValid) {
+      const resetAt =
+        otpRow.expires_at instanceof Date
+          ? otpRow.expires_at.getTime()
+          : Date.now() + 5 * 60 * 1000;
+
+      const ttlMs = Math.max(resetAt - Date.now(), 60 * 1000);
+
+      const failure = registerOtpFailure(failureKey, ttlMs);
+
+      if (failure.count >= 3) {
+        await db
+          .delete(otp_requests)
+          .where(eq(otp_requests.id, otpRow.id));
+
+        clearOtpFailure(failureKey);
+
+        return NextResponse.json(
+          {
+            message:
+              "OTP salah 3 kali. OTP sudah dihapus. Silakan request OTP baru.",
+          },
+          { status: 429 }
+        );
+      }
+
+      return unauthorizedResponse();
+    }
+
+    await db
+      .delete(otp_requests)
+      .where(eq(otp_requests.id, otpRow.id));
+
+    clearOtpFailure(failureKey);
+
     const sessionToken = crypto.randomBytes(32).toString("hex");
-        
-            const now = new Date();
-        
-            // 5. absolute expiry (7 hari)
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + 1);
-        
-            // 6. simpan session + lastActivity
-            const insertResult = await db.insert(sessions).values({
-            userId: user.id,
-            token: sessionToken,
-            expiresAt,
-            lastActivity: now,
-          });
-            // console.log("Done insert");
-    
-            
-    otpStore.delete(email);
+    const sessionExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await db.insert(sessions).values({
+      userId: user.id,
+      token: sessionToken,
+      expiresAt: sessionExpiresAt,
+      lastActivity: now,
+    });
 
     const redirectTo = getRedirectByRole(user.role);
 
     const response = NextResponse.json(
       {
-        message: "Login employee berhasil.",
+        message: "Verifikasi OTP berhasil.",
         redirectTo,
         user: {
           id: user.id,
@@ -232,6 +289,7 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
+<<<<<<< HEAD
     response.cookies.set("session_token", sessionToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
@@ -239,27 +297,36 @@ export async function POST(req: Request) {
           path: "/",
           maxAge: 60 * 60 * 24 * 1,
         });
+=======
+>>>>>>> 99c7eea (complete pull req)
 
+    response.cookies.set("session_token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
 
     response.cookies.set("hospital_user_id", String(user.id), {
       httpOnly: true,
-      sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 8,
+      maxAge: 60 * 60 * 24,
     });
 
     response.cookies.set("hospital_user_role", String(user.role ?? ""), {
       httpOnly: true,
-      sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 8,
+      maxAge: 60 * 60 * 24,
     });
 
     return response;
   } catch (error) {
-    console.error("[VERIFY_EMPLOYEE_OTP_ERROR]", error);
+    console.error("[VERIFY_OTP_ERROR]", error);
 
     return NextResponse.json(
       {

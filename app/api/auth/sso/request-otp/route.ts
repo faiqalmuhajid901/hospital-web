@@ -1,79 +1,47 @@
+// src/app/api/auth/employee/request-otp/route.ts
+
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { randomInt } from "crypto";
+import crypto from "crypto";
 
 import { db } from "@/db";
-import { users } from "@/db/section/auth";
+import { users, otp_requests } from "@/db/schema";
+import { isEmployeeRole } from "@/lib/employee-auth";
+import { sendOtpEmail } from "@/lib/mail";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-type OtpRecord = {
-  email: string;
-  userId: number | string;
-  otpHash: string;
-  expiresAt: number;
-  attempts: number;
-};
-
-const globalStore = globalThis as typeof globalThis & {
-  __hospitalEmployeeOtpStore?: Map<string, OtpRecord>;
-};
-
-const otpStore =
-  globalStore.__hospitalEmployeeOtpStore ??
-  (globalStore.__hospitalEmployeeOtpStore = new Map<string, OtpRecord>());
-
 const requestOtpSchema = z.object({
-  email: z
-    .string()
-    .email("Format email tidak valid.")
-    .transform((value) => value.trim().toLowerCase()),
-  accountType: z.literal("employee").optional(),
+  email: z.string().trim().email("Email tidak valid."),
 });
 
-function normalizeRole(role: string | null | undefined) {
-  return role?.trim().toLowerCase();
-}
+function getOtpPepper() {
+  const pepper = process.env.OTP_PEPPER;
 
-function isPatientRole(role: string | null | undefined) {
-  const normalizedRole = normalizeRole(role);
+  if (!pepper && process.env.NODE_ENV === "production") {
+    throw new Error("OTP_PEPPER wajib diisi di production.");
+  }
 
-  return normalizedRole === "patient" || normalizedRole === "pasien";
+  return pepper ?? "dev-only-change-this-otp-pepper";
 }
 
 function generateOtp() {
-  return randomInt(100000, 1000000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 }
 
-async function sendOtpEmail(params: {
-  email: string;
-  name: string | null;
-  otp: string;
-}) {
-  const { email, name, otp } = params;
-
-  /*
-    DEVELOPMENT MODE:
-    Untuk sekarang OTP ditampilkan di terminal.
-    Nanti kalau sudah siap kirim email sungguhan, fungsi ini bisa diganti
-    pakai Nodemailer, Resend, SMTP kantor, atau service email lain.
-  */
-
-  console.log("======================================");
-  console.log("[EMPLOYEE_SSO_OTP]");
-  console.log("Kepada :", email);
-  console.log("Nama   :", name ?? "-");
-  console.log("OTP    :", otp);
-  console.log("Expired: 5 menit");
-  console.log("======================================");
+function safeSuccessResponse() {
+  return NextResponse.json(
+    {
+      message:
+        "Jika email terdaftar sebagai karyawan aktif, kode OTP akan dikirim.",
+    },
+    { status: 200 }
+  );
 }
-export async function GET() {
-  return NextResponse.json({
-    message: "GET request-otp endpoint aktif",
-  });
-}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -82,14 +50,46 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Data tidak valid.",
+          message: "Data request OTP tidak valid.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 422 }
       );
     }
 
-    const { email } = parsed.data;
+    const email = parsed.data.email.toLowerCase();
+    const ip = getClientIp(req);
+
+    const ipLimit = checkRateLimit(
+      `otp-request-ip:${ip}`,
+      3,
+      60 * 1000
+    );
+
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        {
+          message: "Terlalu banyak request OTP dari IP ini. Coba lagi 1 menit.",
+        },
+        { status: 429 }
+      );
+    }
+
+    const emailLimit = checkRateLimit(
+      `otp-request-email:${email}`,
+      1,
+      60 * 1000
+    );
+
+    if (!emailLimit.allowed) {
+      return NextResponse.json(
+        {
+          message:
+            "OTP sudah diminta. Tunggu minimal 1 menit sebelum meminta lagi.",
+        },
+        { status: 429 }
+      );
+    }
 
     const foundUsers = await db
       .select({
@@ -105,63 +105,91 @@ export async function POST(req: Request) {
 
     if (foundUsers.length === 0) {
       return NextResponse.json(
-        {
-          message: "Email karyawan tidak ditemukan.",
-        },
-        { status: 404 }
-      );
+    {
+      message:
+        "email tidak ditemukan",
+    },
+    { status: 200 }
+  );
     }
 
     const user = foundUsers[0];
 
-    if (isPatientRole(user.role)) {
+    if (!isEmployeeRole(user.role)) {
       return NextResponse.json(
-        {
-          message: "Login SSO hanya untuk karyawan rumah sakit.",
-        },
-        { status: 403 }
-      );
+    {
+      message:
+        "bukan seorang employee",
+    },
+    { status: 200 }
+  );
     }
 
     if (user.status && user.status !== "active") {
       return NextResponse.json(
+    {
+      message:
+        "email tidak aktif",
+    },
+    { status: 200 }
+  );
+    }
+
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+
+    const requestsInLastMinute = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(otp_requests)
+      .where(
+        and(
+          eq(otp_requests.email, email),
+          gte(otp_requests.created_at, oneMinuteAgo)
+        )
+      );
+
+    if (Number(requestsInLastMinute[0]?.count ?? 0) >= 1) {
+      return NextResponse.json(
         {
-          message: "Akun tidak aktif. Hubungi administrator.",
+          message: "OTP sudah dikirim. Tunggu minimal 1 menit.",
         },
-        { status: 403 }
+        { status: 429 }
       );
     }
 
-    const otp = generateOtp();
-    const otpHash = await bcrypt.hash(otp, 10);
+    await db
+      .delete(otp_requests)
+      .where(eq(otp_requests.email, email));
 
-    otpStore.set(email, {
+    const otp = generateOtp();
+
+    const otpHash = await bcrypt.hash(
+      `${otp}:${getOtpPepper()}`,
+      12
+    );
+
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await db.insert(otp_requests).values({
       email,
-      userId: user.id,
-      otpHash,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-      attempts: 0,
+      otp_hash: otpHash,
+      expires_at: expiresAt,
     });
 
     await sendOtpEmail({
-      email,
+      to: email,
       name: user.name,
       otp,
     });
 
-    return NextResponse.json(
-      {
-        message: "Kode OTP telah dikirim ke email karyawan.",
-        devOtp: process.env.NODE_ENV !== "production" ? otp : undefined,
-      },
-      { status: 200 }
-    );
+    return safeSuccessResponse();
   } catch (error) {
-    console.error("[REQUEST_EMPLOYEE_OTP_ERROR]", error);
+    console.error("[REQUEST_OTP_ERROR]", error);
 
     return NextResponse.json(
       {
-        message: "Terjadi kesalahan server saat mengirim OTP.",
+        message: "Terjadi kesalahan server saat request OTP.",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
