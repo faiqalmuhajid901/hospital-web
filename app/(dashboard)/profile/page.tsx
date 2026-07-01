@@ -2,23 +2,48 @@
 
 import { DashboardShell } from "@/app/components/dashboard/DashboardShell";
 import { useDashboardUser } from "@/app/components/dashboard/useDashboardUser";
+import styles from "./profile.module.css";
 
 export default function ProfilePage() {
-  const { user } = useDashboardUser("dokter");
+  const { user } = useDashboardUser();
 
   return (
     <DashboardShell
       title="Profil Saya"
       activeMenu="profile"
-      role="dokter"
+      role={user.role}
+      user={user}
     >
-      <div style={{ padding: 20 }}>
-        <h2>Profil Saya</h2>
+      <div className={styles.page}>
 
-        <p>{user.name}</p>
-        <p>{user.role}</p>
-        <p>{user.username}</p>
-        <p>{user.email}</p>
+        <div className={styles.header}>
+          <div className={styles.avatar}>
+            {user.avatarInitials}
+          </div>
+
+          <div>
+            <h2 className={styles.name}>{user.name}</h2>
+            <p className={styles.role}>{user.roleLabel}</p>
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.row}>
+            <span>Username</span>
+            <b>{user.username}</b>
+          </div>
+
+          <div className={styles.row}>
+            <span>Email</span>
+            <b>{user.email}</b>
+          </div>
+
+          <div className={styles.row}>
+            <span>Role</span>
+            <b>{user.role}</b>
+          </div>
+        </div>
+
       </div>
     </DashboardShell>
   );
