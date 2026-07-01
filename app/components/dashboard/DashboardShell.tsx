@@ -1,24 +1,222 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "./Sidebar";
+import type { DashboardRole } from "../types/menu";
 import styles from "./DashboardShell.module.css";
+
+type DashboardUser = {
+  id?: number | string;
+  name: string;
+  role: DashboardRole;
+  roleLabel: string;
+  avatarInitials: string;
+};
+
+type AuthMeResponse = {
+  authenticated: boolean;
+  user?: {
+    id?: number | string;
+    name?: string | null;
+    username?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    status?: string | null;
+    role?: string | null;
+    roleLabel?: string | null;
+    avatarInitials?: string | null;
+  };
+};
 
 type DashboardShellProps = {
   children: ReactNode;
   title: string;
   activeMenu?: string;
+  role?: DashboardRole;
+  user?: Partial<DashboardUser>;
+};
+
+function normalizeRole(role?: string | null): DashboardRole {
+  const normalizedRole = role?.trim().toLowerCase();
+
+  if (!normalizedRole) return "guest";
+
+  if (["super-admin"].includes(normalizedRole)) {
+    return "super_admin";
+  }
+
+  if (["admin"].includes(normalizedRole)) {
+    return "admin";
+  }
+
+  if (["doctor", "dokter"].includes(normalizedRole)) {
+    return "dokter";
+  }
+
+  if (["patient", "pasien"].includes(normalizedRole)) {
+    return "pasien";
+  }
+
+  if (["nurse", "perawat"].includes(normalizedRole)) {
+    return "perawat";
+  }
+
+  if (
+    ["pharmacy", "farmasi", "apoteker", "pharmacist"].includes(normalizedRole)
+  ) {
+    return "apoteker";
+  }
+
+  if (["lab", "laboratory", "laboratorium"].includes(normalizedRole)) {
+    return "laboratorium";
+  }
+
+  return "guest";
+}
+
+function getRoleLabel(role: DashboardRole) {
+  const labels: Record<DashboardRole, string> = {
+    guest: "Tamu",
+    admin: "Admin",
+    super_admin: "Super-admin",
+    dokter: "Dokter",
+    pasien: "Pasien",
+    perawat: "Perawat",
+    apoteker: "Apoteker",
+    laboratorium: "Laboratorium",
+  };
+
+  return labels[role] ?? "Tamu";
+}
+
+function getInitials(name?: string | null) {
+  if (!name) return "U";
+
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+
+  return initials || "U";
+}
+
+const defaultUser: DashboardUser = {
+  name: "User",
+  role: "guest",
+  roleLabel: "Tamu",
+  avatarInitials: "U",
 };
 
 export function DashboardShell({
   children,
   title,
   activeMenu,
+  role,
+  user,
 }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  const [isClientReady, setIsClientReady] = useState(false);
+  const [sessionUser, setSessionUser] = useState<DashboardUser | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    setHasMounted(true);
+
+    async function loadCurrentUser() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (isMounted) {
+            setSessionUser(null);
+            setIsClientReady(true);
+          }
+
+          return;
+        }
+
+        const data = (await response.json()) as AuthMeResponse;
+
+        if (!isMounted) return;
+
+        if (!data.authenticated || !data.user) {
+          setSessionUser(null);
+          setIsClientReady(true);
+          return;
+        }
+
+        const resolvedRole = normalizeRole(data.user.role);
+        const resolvedName = data.user.name ?? user?.name ?? defaultUser.name;
+
+        setSessionUser({
+          id: data.user.id,
+          name: resolvedName,
+          role: resolvedRole,
+          roleLabel:
+            data.user.roleLabel ??
+            user?.roleLabel ??
+            getRoleLabel(resolvedRole),
+          avatarInitials:
+            data.user.avatarInitials ??
+            user?.avatarInitials ??
+            getInitials(resolvedName),
+        });
+
+        setIsClientReady(true);
+      } catch {
+        if (isMounted) {
+          setSessionUser(null);
+          setIsClientReady(true);
+        }
+      }
+    }
+
+    loadCurrentUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.name, user?.roleLabel, user?.avatarInitials]);
+
+  const currentUser = useMemo<DashboardUser>(() => {
+    if (!hasMounted) {
+      return defaultUser;
+    }
+    if (sessionUser) {
+      return sessionUser;
+    }
+
+    const resolvedRole = isClientReady ? normalizeRole(role) : "guest";
+    const resolvedName = user?.name ?? defaultUser.name;
+
+    return {
+      id: user?.id,
+      name: resolvedName,
+      role: resolvedRole,
+      roleLabel: user?.roleLabel ?? getRoleLabel(resolvedRole),
+      avatarInitials: user?.avatarInitials ?? getInitials(resolvedName),
+    };
+  }, [
+    sessionUser,
+    isClientReady,
+    role,
+    user?.id,
+    user?.name,
+    user?.roleLabel,
+    user?.avatarInitials,
+  ]);
 
   function toggleSidebar() {
     setSidebarOpen((current) => !current);
@@ -35,6 +233,7 @@ export function DashboardShell({
           activeMenu={activeMenu}
           isOpen={sidebarOpen}
           onClose={closeMobileSidebar}
+          role={currentUser.role}
         />
 
         <main className={styles.mainArea}>
@@ -94,10 +293,15 @@ export function DashboardShell({
                   className={styles.userChip}
                   onClick={() => setUserMenuOpen((current) => !current)}
                 >
-                  <span className={styles.userAvatarSmall}>AP</span>
+                  <span className={styles.userAvatarSmall}>
+                    {currentUser.avatarInitials}
+                  </span>
+
                   <span className={styles.userText}>
-                    <span className={styles.userName}>dr. Azita Putri</span>
-                    <span className={styles.userRole}>Dokter Umum</span>
+                    <span className={styles.userName}>{currentUser.name}</span>
+                    <span className={styles.userRole}>
+                      {currentUser.roleLabel}
+                    </span>
                   </span>
                 </button>
 

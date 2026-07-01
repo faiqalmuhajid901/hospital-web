@@ -1,6 +1,6 @@
 .page {
   width: 100%;
-  max-width: 760px;
+  max-width: none;
 }
 
 .headerRow {
@@ -58,11 +58,31 @@
   outline: none;
 }
 
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  margin-bottom: 18px;
 }
 
 .statCard {
@@ -95,14 +115,28 @@
   background: #ffffff;
   padding: 20px;
   box-shadow: 0 18px 44px rgba(21, 110, 234, 0.08);
-  margin-bottom: 22px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .panelTitle {
-  margin: 0 0 18px;
+  margin: 0;
   color: #102033;
   font-size: 17px;
   font-weight: 900;
+}
+
+.panelDescription {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .tableWrapper {
@@ -112,7 +146,7 @@
 
 .table {
   width: 100%;
-  min-width: 640px;
+  min-width: 760px;
   border-collapse: collapse;
 }
 
@@ -123,6 +157,7 @@
   text-align: left;
   font-size: 12px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .table td {
@@ -131,6 +166,7 @@
   color: #102033;
   font-size: 13px;
   font-weight: 700;
+  vertical-align: middle;
 }
 
 .table tr:last-child td {
@@ -139,10 +175,13 @@
 
 .status {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   padding: 5px 10px;
   font-size: 12px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .success {
@@ -155,15 +194,125 @@
   color: #ea580c;
 }
 
+.info {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
 .linkButton {
   display: inline-flex;
-  margin-top: 16px;
+  align-items: center;
+  justify-content: center;
   border: none;
   background: transparent;
   color: #156eea;
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.actionButton {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  background: #bae6fd;
+}
+
+.practiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.practiceItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.practiceTime {
+  margin: 0;
+  color: #102033;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.practiceClinic {
+  margin: 6px 0 0;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.practiceRoom {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 16px;
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.summaryItem:first-child {
+  padding-top: 0;
+}
+
+.summaryItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.summaryItem span {
+  color: #64748b;
+}
+
+.summaryItem strong {
+  color: #102033;
+  font-weight: 900;
+  text-align: right;
 }
 
 .donutWrap {
@@ -244,6 +393,17 @@
   background: #94a3b8;
 }
 
+@media (max-width: 1280px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sideColumn {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1180px) {
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
@@ -258,7 +418,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 820px) {
   .headerRow {
     flex-direction: column;
   }
@@ -267,6 +427,16 @@
     width: 100%;
   }
 
+  .panelHeader {
+    flex-direction: column;
+  }
+
+  .sideColumn {
+    display: flex;
+  }
+}
+
+@media (max-width: 720px) {
   .statsGrid {
     grid-template-columns: 1fr;
   }
@@ -274,5 +444,9 @@
   .panel,
   .statCard {
     padding: 18px;
+  }
+
+  .table {
+    min-width: 680px;
   }
 }

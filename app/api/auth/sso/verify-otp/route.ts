@@ -51,36 +51,34 @@ function getRedirectByRole(role: string | null | undefined) {
 
   switch (normalizedRole) {
     case "super_admin":
-    case "super admin":
+      return "/dashboard/super_admin";
+
     case "admin":
       return "/dashboard/admin";
 
-    case "doctor":
     case "dokter":
-      return "/dashboard/doctor";
+      return "/dashboard/dokter";
 
     case "nurse":
     case "perawat":
-      return "/dashboard/nurse";
+      return "/dashboard/perawat";
 
     case "pharmacist":
     case "apoteker":
-      return "/dashboard/pharmacy";
+      return "/dashboard/apoteker";
 
-    case "laboratory":
     case "laboratorium":
-      return "/dashboard/laboratory";
+      return "/dashboard/laboratorium";
 
-    case "patient":
     case "pasien":
-      return "/dashboard/patient";
+      return "/dashboard/pasien";
 
     case "employee":
     case "pegawai":
-      return "/dashboard/admin";
+      return "/dashboard/pegawai";
 
     default:
-      return "/dashboard/admin";
+      return "login";
   }
 }
 
@@ -236,7 +234,7 @@ export async function POST(req: Request) {
     );
     response.cookies.set("session_token", sessionToken, {
           httpOnly: true,
-          secure: true,
+          secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
           maxAge: 60 * 60 * 24 * 1,

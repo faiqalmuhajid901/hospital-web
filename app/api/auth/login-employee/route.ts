@@ -25,58 +25,48 @@ function isEmployeeRole(role: string | null | undefined) {
 
   return [
     "dokter",
-    "doctor",
     "perawat",
-    "nurse",
     "apoteker",
-    "pharmacist",
     "laboratorium",
-    "laboratory",
-    "lab",
     "akuntan",
-    "accountant",
     "admin",
-    "super_admin",
-    "super admin",
+    "super-admin",
     "employee",
     "pegawai",
   ].includes(normalizedRole);
 }
 
-function getRedirectByRole(role: string | null | undefined) {
-  const normalizedRole = normalizeRole(role);
+function getRedirectByRole(role?: string | null | undefined) {
+  const normalizedRole = role?.trim().toLowerCase();
 
   switch (normalizedRole) {
-    case "dokter":
-    case "doctor":
-      return "/dashboard/doctor";
-
-    case "perawat":
-    case "nurse":
-      return "/dashboard/nurse";
-
-    case "apoteker":
-    case "pharmacist":
-      return "/dashboard/pharmacy";
-
-    case "laboratorium":
-    case "laboratory":
-    case "lab":
-      return "/dashboard/laboratory";
-
-    case "akuntan":
-    case "accountant":
-      return "/dashboard/billing";
+    case "super_admin":
+      return "/dashboard/super_admin";
 
     case "admin":
-    case "super_admin":
-    case "super admin":
-    case "employee":
-    case "pegawai":
       return "/dashboard/admin";
 
+    case "dokter":
+      return "/dashboard/dokter";
+
+    case "perawat":
+      return "/dashboard/perawat";
+
+    case "apoteker":
+      return "/dashboard/apoteker";
+
+    case "laboratorium":
+      return "/dashboard/laboratorium";
+
+    case "akuntan":
+      return "/dashboard/akuntan";
+
+      case "employee":
+      case "pegawai":
+        return "/dashboard/employee";
+
     default:
-      return "/dashboard/admin";
+      return "login";
   }
 }
 
@@ -191,7 +181,7 @@ export async function POST(req: Request) {
 
         response.cookies.set("session_token", sessionToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 1,
