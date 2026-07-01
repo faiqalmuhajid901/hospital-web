@@ -11,3 +11,4 @@ export * from "./inpatient";
 export * from "./cms";
 export * from "./relations";
 export * from "./session";
+export * from "./otp";

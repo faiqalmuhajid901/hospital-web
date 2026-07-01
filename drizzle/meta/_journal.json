@@ -15,6 +15,13 @@
       "when": 1782648470615,
       "tag": "0001_organic_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782841208677,
+      "tag": "0002_sleepy_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }
