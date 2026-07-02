@@ -1,5 +1,5 @@
 import { DashboardShell } from "../../../components/dashboard/DashboardShell";
-import styles from "./pharmacyDashboard.module.css";
+import styles from "./apotekerDashboard.module.css";
 
 const stats = [
   { label: "Resep Hari Ini", value: "45" },

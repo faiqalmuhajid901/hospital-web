@@ -34,44 +34,8 @@ const otpFailureBuckets = new Map<string, FailureBucket>();
 function getOtpPepper() {
   const pepper = process.env.OTP_PEPPER;
 
-<<<<<<< HEAD
-function getRedirectByRole(role: string | null | undefined) {
-  const normalizedRole = normalizeRole(role);
-
-  switch (normalizedRole) {
-    case "super_admin":
-      return "/dashboard/super_admin";
-
-    case "admin":
-      return "/dashboard/admin";
-
-    case "dokter":
-      return "/dashboard/dokter";
-
-    case "nurse":
-    case "perawat":
-      return "/dashboard/perawat";
-
-    case "pharmacist":
-    case "apoteker":
-      return "/dashboard/apoteker";
-
-    case "laboratorium":
-      return "/dashboard/laboratorium";
-
-    case "pasien":
-      return "/dashboard/pasien";
-
-    case "employee":
-    case "pegawai":
-      return "/dashboard/pegawai";
-
-    default:
-      return "login";
-=======
   if (!pepper && process.env.NODE_ENV === "production") {
     throw new Error("OTP_PEPPER wajib diisi di production.");
->>>>>>> 99c7eea (complete pull req)
   }
 
   return pepper ?? "dev-only-change-this-otp-pepper";
@@ -289,16 +253,6 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
-<<<<<<< HEAD
-    response.cookies.set("session_token", sessionToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path: "/",
-          maxAge: 60 * 60 * 24 * 1,
-        });
-=======
->>>>>>> 99c7eea (complete pull req)
 
     response.cookies.set("session_token", sessionToken, {
       httpOnly: true,
