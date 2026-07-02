@@ -10,18 +10,12 @@ export function isEmployeeRole(role: string | null | undefined) {
 
   return [
     "dokter",
-    "doctor",
     "perawat",
-    "nurse",
     "apoteker",
-    "pharmacist",
     "laboratorium",
-    "laboratory",
-    "lab",
     "akuntan",
-    "accountant",
     "admin",
-    "super admin",
+    "super_admin",
     "employee",
     "pegawai",
   ].includes(normalizedRole);
@@ -32,34 +26,30 @@ export function getRedirectByRole(role: string | null | undefined) {
 
   switch (normalizedRole) {
     case "dokter":
-    case "doctor":
-      return "/dashboard/doctor";
+      return "/dashboard/dokter";
 
     case "perawat":
-    case "nurse":
-      return "/dashboard/nurse";
+      return "/dashboard/perawat";
 
     case "apoteker":
-    case "pharmacist":
-      return "/dashboard/pharmacy";
+      return "/dashboard/apoteker";
 
     case "laboratorium":
-    case "laboratory":
-    case "lab":
-      return "/dashboard/laboratory";
+      return "/dashboard/laboratorium";
 
     case "akuntan":
-    case "accountant":
-      return "/dashboard/billing";
+      return "/dashboard/akuntan";
 
     case "admin":
+      return "/dashboard/admin";
+
     case "super_admin":
-    case "super admin":
+      return "/dashboard/super_admin";
     case "employee":
     case "pegawai":
       return "/dashboard/admin";
 
     default:
-      return "/dashboard/admin";
+      return "login";
   }
 }

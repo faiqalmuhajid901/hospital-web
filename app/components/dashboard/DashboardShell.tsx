@@ -50,7 +50,7 @@ function normalizeRole(role?: string | null): DashboardRole {
     return "admin";
   }
 
-  if (["doctor", "dokter"].includes(normalizedRole)) {
+  if (["dokter"].includes(normalizedRole)) {
     return "dokter";
   }
 
