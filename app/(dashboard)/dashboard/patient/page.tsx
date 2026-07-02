@@ -1,5 +1,5 @@
 import { DashboardShell } from "../../../components/dashboard/DashboardShell";
-import styles from "./patientDashboard.module.css";
+import styles from "./pasienDashboard.module.css";
 
 const patientStats = [
   {

@@ -1,5 +1,5 @@
 import { DashboardShell } from "../../../components/dashboard/DashboardShell";
-import styles from "./nurseDashboard.module.css";
+import styles from "./perawatDashboard.module.css";
 
 const stats = [
   { label: "Pasien Dirawat", value: "24" },

@@ -1,5 +1,5 @@
 import { DashboardShell } from "../../../components/dashboard/DashboardShell";
-import styles from "./laboratoryDashboard.module.css";
+import styles from "./laboratoriumDashboard.module.css";
 
 const stats = [
   { label: "Order Hari Ini", value: "38" },

@@ -1,7 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Sidebar } from "./Sidebar";
 import type { DashboardRole } from "../types/menu";
 import styles from "./DashboardShell.module.css";
@@ -37,38 +41,66 @@ type DashboardShellProps = {
   user?: Partial<DashboardUser>;
 };
 
-function normalizeRole(role?: string | null): DashboardRole {
-  const normalizedRole = role?.trim().toLowerCase();
+function normalizeRole(
+  role?: string | null
+): DashboardRole {
+  const normalizedRole = role
+    ?.trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/-/g, "_");
 
-  if (!normalizedRole) return "guest";
+  if (!normalizedRole) {
+    return "guest";
+  }
 
-  if (["super-admin"].includes(normalizedRole)) {
+  if (normalizedRole === "super_admin") {
     return "super_admin";
   }
 
-  if (["admin"].includes(normalizedRole)) {
+  if (normalizedRole === "admin") {
     return "admin";
   }
 
-  if (["dokter"].includes(normalizedRole)) {
+  if (
+    normalizedRole === "dokter" ||
+    normalizedRole === "doctor"
+  ) {
     return "dokter";
   }
 
-  if (["patient", "pasien"].includes(normalizedRole)) {
+  if (
+    normalizedRole === "pasien" ||
+    normalizedRole === "patient"
+  ) {
     return "pasien";
   }
 
-  if (["nurse", "perawat"].includes(normalizedRole)) {
+  if (
+    normalizedRole === "perawat" ||
+    normalizedRole === "nurse"
+  ) {
     return "perawat";
   }
 
   if (
-    ["pharmacy", "farmasi", "apoteker", "pharmacist"].includes(normalizedRole)
+    [
+      "apoteker",
+      "pharmacist",
+      "pharmacy",
+      "farmasi",
+    ].includes(normalizedRole)
   ) {
     return "apoteker";
   }
 
-  if (["lab", "laboratory", "laboratorium"].includes(normalizedRole)) {
+  if (
+    [
+      "laboratorium",
+      "laboratory",
+      "lab",
+    ].includes(normalizedRole)
+  ) {
     return "laboratorium";
   }
 
@@ -79,7 +111,7 @@ function getRoleLabel(role: DashboardRole) {
   const labels: Record<DashboardRole, string> = {
     guest: "Tamu",
     admin: "Admin",
-    super_admin: "Super-admin",
+    super_admin: "Super Admin",
     dokter: "Dokter",
     pasien: "Pasien",
     perawat: "Perawat",
@@ -91,13 +123,16 @@ function getRoleLabel(role: DashboardRole) {
 }
 
 function getInitials(name?: string | null) {
-  if (!name) return "U";
+  if (!name?.trim()) {
+    return "U";
+  }
 
   const initials = name
-    .split(" ")
+    .trim()
+    .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join("");
 
   return initials || "U";
@@ -117,106 +152,140 @@ export function DashboardShell({
   role,
   user,
 }: DashboardShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [notificationOpen, setNotificationOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] =
+    useState(true);
 
-  const [isClientReady, setIsClientReady] = useState(false);
-  const [sessionUser, setSessionUser] = useState<DashboardUser | null>(null);
+  const [
+    notificationOpen,
+    setNotificationOpen,
+  ] = useState(false);
+
+  const [userMenuOpen, setUserMenuOpen] =
+    useState(false);
+
+  const [
+    isClientReady,
+    setIsClientReady,
+  ] = useState(false);
+
+  const [
+    sessionUser,
+    setSessionUser,
+  ] = useState<DashboardUser | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-
-    setHasMounted(true);
+    const controller = new AbortController();
 
     async function loadCurrentUser() {
+      let resolvedSessionUser: DashboardUser | null =
+        null;
+
       try {
         const response = await fetch("/api/auth/me", {
           method: "GET",
           credentials: "include",
           cache: "no-store",
+          signal: controller.signal,
         });
 
         if (!response.ok) {
-          if (isMounted) {
-            setSessionUser(null);
-            setIsClientReady(true);
-          }
+          throw new Error(
+            `Gagal mengambil data pengguna: ${response.status}`
+          );
+        }
 
+        const data =
+          (await response.json()) as AuthMeResponse;
+
+        if (
+          data.authenticated &&
+          data.user
+        ) {
+          const resolvedRole = normalizeRole(
+            data.user.role
+          );
+
+          const resolvedName =
+            data.user.name?.trim() ||
+            user?.name?.trim() ||
+            defaultUser.name;
+
+          resolvedSessionUser = {
+            id: data.user.id,
+            name: resolvedName,
+            role: resolvedRole,
+            roleLabel:
+              data.user.roleLabel?.trim() ||
+              user?.roleLabel?.trim() ||
+              getRoleLabel(resolvedRole),
+            avatarInitials:
+              data.user.avatarInitials?.trim() ||
+              user?.avatarInitials?.trim() ||
+              getInitials(resolvedName),
+          };
+        }
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
           return;
         }
 
-        const data = (await response.json()) as AuthMeResponse;
+        resolvedSessionUser = null;
+      }
 
-        if (!isMounted) return;
-
-        if (!data.authenticated || !data.user) {
-          setSessionUser(null);
-          setIsClientReady(true);
-          return;
-        }
-
-        const resolvedRole = normalizeRole(data.user.role);
-        const resolvedName = data.user.name ?? user?.name ?? defaultUser.name;
-
-        setSessionUser({
-          id: data.user.id,
-          name: resolvedName,
-          role: resolvedRole,
-          roleLabel:
-            data.user.roleLabel ??
-            user?.roleLabel ??
-            getRoleLabel(resolvedRole),
-          avatarInitials:
-            data.user.avatarInitials ??
-            user?.avatarInitials ??
-            getInitials(resolvedName),
-        });
-
+      if (!controller.signal.aborted) {
+        setSessionUser(resolvedSessionUser);
         setIsClientReady(true);
-      } catch {
-        if (isMounted) {
-          setSessionUser(null);
-          setIsClientReady(true);
-        }
       }
     }
 
-    loadCurrentUser();
+    void loadCurrentUser();
 
     return () => {
-      isMounted = false;
-    };
-  }, [user?.name, user?.roleLabel, user?.avatarInitials]);
-
-  const currentUser = useMemo<DashboardUser>(() => {
-    if (!hasMounted) {
-      return defaultUser;
-    }
-    if (sessionUser) {
-      return sessionUser;
-    }
-
-    const resolvedRole = isClientReady ? normalizeRole(role) : "guest";
-    const resolvedName = user?.name ?? defaultUser.name;
-
-    return {
-      id: user?.id,
-      name: resolvedName,
-      role: resolvedRole,
-      roleLabel: user?.roleLabel ?? getRoleLabel(resolvedRole),
-      avatarInitials: user?.avatarInitials ?? getInitials(resolvedName),
+      controller.abort();
     };
   }, [
-    sessionUser,
-    isClientReady,
-    role,
-    user?.id,
     user?.name,
     user?.roleLabel,
     user?.avatarInitials,
   ]);
+
+  const currentUser =
+    useMemo<DashboardUser>(() => {
+      if (sessionUser) {
+        return sessionUser;
+      }
+
+      const resolvedRole = isClientReady
+        ? normalizeRole(role)
+        : "guest";
+
+      const resolvedName =
+        user?.name?.trim() ||
+        defaultUser.name;
+
+      return {
+        id: user?.id,
+        name: resolvedName,
+        role: resolvedRole,
+        roleLabel:
+          user?.roleLabel?.trim() ||
+          getRoleLabel(resolvedRole),
+        avatarInitials:
+          user?.avatarInitials?.trim() ||
+          getInitials(resolvedName),
+      };
+    }, [
+      sessionUser,
+      isClientReady,
+      role,
+      user?.id,
+      user?.name,
+      user?.roleLabel,
+      user?.avatarInitials,
+    ]);
 
   function toggleSidebar() {
     setSidebarOpen((current) => !current);
@@ -224,6 +293,16 @@ export function DashboardShell({
 
   function closeMobileSidebar() {
     setSidebarOpen(false);
+  }
+
+  function toggleNotification() {
+    setNotificationOpen((current) => !current);
+    setUserMenuOpen(false);
+  }
+
+  function toggleUserMenu() {
+    setUserMenuOpen((current) => !current);
+    setNotificationOpen(false);
   }
 
   return (
@@ -245,6 +324,7 @@ export function DashboardShell({
                   className={styles.menuButton}
                   onClick={toggleSidebar}
                   aria-label="Buka sidebar"
+                  aria-expanded={sidebarOpen}
                 >
                   <span />
                   <span />
@@ -253,8 +333,13 @@ export function DashboardShell({
               ) : null}
 
               <div>
-                <p className={styles.topbarKicker}>Medisystem HIS</p>
-                <h1 className={styles.topbarTitle}>{title}</h1>
+                <p className={styles.topbarKicker}>
+                  Medisystem HIS
+                </p>
+
+                <h1 className={styles.topbarTitle}>
+                  {title}
+                </h1>
               </div>
             </div>
 
@@ -263,16 +348,28 @@ export function DashboardShell({
                 <button
                   type="button"
                   className={styles.iconButton}
-                  onClick={() => setNotificationOpen((current) => !current)}
+                  onClick={toggleNotification}
                   aria-label="Buka notifikasi"
+                  aria-expanded={notificationOpen}
                 >
                   <span className={styles.dot} />
                 </button>
 
                 {notificationOpen ? (
                   <div className={styles.dropdown}>
-                    <p className={styles.dropdownTitle}>Notifikasi</p>
-                    <p className={styles.dropdownText}>
+                    <p
+                      className={
+                        styles.dropdownTitle
+                      }
+                    >
+                      Notifikasi
+                    </p>
+
+                    <p
+                      className={
+                        styles.dropdownText
+                      }
+                    >
                       Belum ada notifikasi baru.
                     </p>
                   </div>
@@ -291,32 +388,57 @@ export function DashboardShell({
                 <button
                   type="button"
                   className={styles.userChip}
-                  onClick={() => setUserMenuOpen((current) => !current)}
+                  onClick={toggleUserMenu}
+                  aria-label="Buka menu pengguna"
+                  aria-expanded={userMenuOpen}
                 >
-                  <span className={styles.userAvatarSmall}>
+                  <span
+                    className={
+                      styles.userAvatarSmall
+                    }
+                  >
                     {currentUser.avatarInitials}
                   </span>
 
                   <span className={styles.userText}>
-                    <span className={styles.userName}>{currentUser.name}</span>
-                    <span className={styles.userRole}>
+                    <span
+                      className={styles.userName}
+                    >
+                      {currentUser.name}
+                    </span>
+
+                    <span
+                      className={styles.userRole}
+                    >
                       {currentUser.roleLabel}
                     </span>
                   </span>
                 </button>
 
                 {userMenuOpen ? (
-                  <div className={styles.userDropdown}>
-                    <a href="/profile">Profil Saya</a>
-                    <a href="/change-password">Ubah Password</a>
-                    <a href="/logout">Logout</a>
+                  <div
+                    className={styles.userDropdown}
+                  >
+                    <a href="/profile">
+                      Profil Saya
+                    </a>
+
+                    <a href="/change-password">
+                      Ubah Password
+                    </a>
+
+                    <a href="/logout">
+                      Logout
+                    </a>
                   </div>
                 ) : null}
               </div>
             </div>
           </header>
 
-          <section className={styles.content}>{children}</section>
+          <section className={styles.content}>
+            {children}
+          </section>
         </main>
       </div>
     </div>

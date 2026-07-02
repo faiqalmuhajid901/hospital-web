@@ -11,26 +11,26 @@
 #   "terms": true
 # }
 
-# POST http://localhost:3000/api/auth/register-employee
-# Content-Type: application/json
-
-# {
-#   "name": "Thegarmj1",
-#   "email": "thegarmj@gmail.com",
-#   "phone": "081234567890",
-#   "username": "mj_ganteng",
-#   "password": "password1231",
-#   "confirmPassword": "password1231",
-#   "role": "Super Admin",
-#   "terms": true
-# }
-
-POST http://localhost:3000/api/auth/sso/request-otp
+POST http://localhost:3000/api/auth/register-employee
 Content-Type: application/json
 
 {
-  "email": "thegarmj@gmail.com"
+  "name": "Muhammad Faiq Almuhajid",
+  "email": "faiqalmuhajid@google.com",
+  "phone": "081234567890",
+  "username": "DrFaiqAlmuhajid",
+  "password": "password1231",
+  "confirmPassword": "password1231",
+  "role": "Dokter",
+  "terms": true
 }
+
+# POST http://localhost:3000/api/auth/sso/request-otp
+# Content-Type: application/json
+
+# {
+#   "email": "faiq1231@gmail.com"
+# }
 
 # GET http://localhost:3000/api/auth/getUser?page=1&pageSize=2
 # Content-Type: application/json
