@@ -90,7 +90,7 @@ export async function DELETE(req:NextRequest) {
           message: "User tidak boleh mengotak atik"
         }, {status: 400})
       }
-      if(request.id === userId){
+      if(session.id === userId){
         return NextResponse.json({
           message: "Tidak bisa menghapus akun sendiri"
         }, {status: 400})
@@ -118,29 +118,15 @@ export async function DELETE(req:NextRequest) {
         await tx 
         .delete(sessions)
         .where(eq(sessions.userId, userId))
-
-        const deleteUser = await tx
-        .delete(users)
-        .where(eq(users.id, userId))
-        .returning({
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          username: users.username,
-          role: users.role,
-          status: users.status,
-        }
-        )
-        return deleteUser[0]
       } )
       return NextResponse.json({
-        message: "User berhasil dihapus"
+        message: "Session berhasil dihapus"
       }, {status: 200})
   }
   catch{
-    console.error("Delete Users Error", error);
+    console.error("Delete Session Error", error);
     return NextResponse.json({
-      message: "Error delete users"
+      message: "Error delete Session"
     }, {status: 404})
   }
 }

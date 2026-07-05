@@ -6,7 +6,9 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 
-import { id, fk, createdAt } from "./_helpers";
+import { prefixedId, fk, createdAt } from "./_helpers";
+import { customAlphabet } from "nanoid";
+
 
 // =========================
 // Authentication & RBAC
@@ -15,7 +17,7 @@ import { id, fk, createdAt } from "./_helpers";
 export const users = pgTable(
   "users",
   {
-    id: id(),
+    id: prefixedId("USR"),
     name: varchar("name", { length: 255 }),
     username: varchar("username", {length: 255}),
     email: varchar("email", { length: 255 }),

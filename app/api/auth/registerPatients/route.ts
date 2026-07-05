@@ -1,7 +1,6 @@
 // app/api/auth/register/route.ts
 
 import { NextResponse } from "next/server";
-import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -15,7 +14,8 @@ const registerSchema = z
     name: z
       .string()
       .min(3, "Nama minimal 3 karakter.")
-      .max(255, "Nama terlalu panjang."),
+      .max(255, "Nama terlalu panjang.")
+      .transform((value) => value.trim()),
 
     email: z
       .string()
@@ -27,7 +27,8 @@ const registerSchema = z
       .string()
       .min(10, "Nomor HP minimal 10 digit.")
       .max(20, "Nomor HP terlalu panjang.")
-      .regex(/^[0-9+ -]+$/, "Nomor HP tidak valid."),
+      .regex(/^[0-9+ -]+$/, "Nomor HP tidak valid.")
+      .transform((value) => value.trim()),
 
     username: z
       .string()
@@ -39,9 +40,7 @@ const registerSchema = z
       )
       .transform((value) => value.toLowerCase().trim()),
 
-    password: z
-      .string()
-      .min(8, "Password minimal 8 karakter."),
+    password: z.string().min(8, "Password minimal 8 karakter."),
 
     confirmPassword: z.string(),
 
@@ -53,6 +52,60 @@ const registerSchema = z
     path: ["confirmPassword"],
     message: "Konfirmasi password tidak sama.",
   });
+
+type PgLikeError = {
+  code?: string;
+  constraint?: string;
+  constraint_name?: string;
+  detail?: string;
+  message?: string;
+};
+
+function isPgUniqueViolation(error: unknown): error is PgLikeError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as PgLikeError).code === "23505"
+  );
+}
+
+function getConstraintName(error: PgLikeError) {
+  return error.constraint ?? error.constraint_name ?? "";
+}
+
+function uniqueViolationResponse(error: PgLikeError) {
+  const constraint = getConstraintName(error);
+  const detail = error.detail ?? "";
+  const message = error.message ?? "";
+
+  if (
+    constraint === "users_email_unique" ||
+    detail.includes("(email)") ||
+    message.includes("users_email_unique")
+  ) {
+    return NextResponse.json(
+      { message: "Email sudah terdaftar." },
+      { status: 409 }
+    );
+  }
+
+  return NextResponse.json(
+    { message: "Data sudah digunakan." },
+    { status: 409 }
+  );
+}
+
+function isUserIdCollision(error: PgLikeError) {
+  const constraint = getConstraintName(error);
+  const message = error.message ?? "";
+
+  return (
+    constraint === "users_pkey" ||
+    constraint === "users_id_unique" ||
+    message.includes("users_pkey")
+  );
+}
 
 export async function POST(req: Request) {
   try {
@@ -72,82 +125,69 @@ export async function POST(req: Request) {
 
     const data = parsed.data;
 
-    const existingUser = await db
-      .select({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-      })
-      .from(users)
-      .where(
-        or(
-          eq(users.email, data.email),
-          eq(users.username, data.username)
-        )
-      )
-      .limit(1);
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
-    if (existingUser.length > 0) {
-      const found = existingUser[0];
+    const maxRetries = 5;
 
-      if (found.email === data.email) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const result = await db.transaction(async (tx) => {
+          const insertedUsers = await tx
+            .insert(users)
+            .values({
+              name: data.name,
+              email: data.email,
+              username: data.username,
+              phone: data.phone,
+              password: passwordHash,
+              status: "active",
+              role: "pasien",
+            })
+            .returning({
+              id: users.id,
+              name: users.name,
+              email: users.email,
+              username: users.username,
+              phone: users.phone,
+              status: users.status,
+              role: users.role,
+            });
+
+          return insertedUsers[0];
+        });
+
         return NextResponse.json(
-          { message: "Email sudah terdaftar." },
-          { status: 409 }
+          {
+            message: "Registrasi berhasil.",
+            user: result,
+          },
+          { status: 201 }
         );
-      }
+      } catch (error) {
+        if (!isPgUniqueViolation(error)) {
+          throw error;
+        }
 
-      if (found.username === data.username) {
-        return NextResponse.json(
-          { message: "Username sudah digunakan." },
-          { status: 409 }
-        );
+        if (isUserIdCollision(error) && attempt < maxRetries) {
+          continue;
+        }
+
+        return uniqueViolationResponse(error);
       }
     }
 
-    
-
-    const passwordHash = await bcrypt.hash(data.password, 12);
-
-    const result = await db.transaction(async (tx) => {
-      const insertedUsers = await tx
-        .insert(users)
-        .values({
-          name: data.name,
-          email: data.email,
-          username: data.username,
-          phone: data.phone,
-          password: passwordHash,
-          status: "active",
-          role: "pasien"
-        })
-        .returning({
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          username: users.username,
-          phone: users.phone,
-          status: users.status,
-          role: users.role
-        });
-    return insertedUsers[0];
-    });
+    return NextResponse.json(
+      { message: "Registrasi gagal. Silakan coba lagi." },
+      { status: 500 }
+    );
+  } catch (error) {
+    console.error("FULL ERROR:", error);
 
     return NextResponse.json(
       {
-        message: "Registrasi berhasil.",
-        user: result,
+        message: "Terjadi kesalahan server.",
       },
-      { status: 201 }
+      { status: 500 }
     );
-  } catch (error) {
-  console.error("FULL ERROR:", error);
-  return NextResponse.json(
-    {
-      message: "Terjadi kesalahan server.",
-      error: error instanceof Error ? error.message : error,
-    },
-    { status: 500 }
-  );
-}
+  }
 }

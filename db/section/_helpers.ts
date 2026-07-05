@@ -3,7 +3,20 @@ import {
   bigint,
   numeric,
   timestamp,
+  varchar
 } from "drizzle-orm/pg-core";
+import { customAlphabet } from "nanoid";
+
+const alphabet =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+const nanoid12 = customAlphabet(alphabet, 12);
+
+export const prefixedId = (prefix: string) =>
+  varchar("id", { length: prefix.length + 1 + 12 })
+    .primaryKey()
+    .notNull()
+    .$defaultFn(() => `${prefix}-${nanoid12()}`);
 
 export const id = () => bigserial("id", { mode: "number" }).primaryKey();
 
