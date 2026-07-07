@@ -21,7 +21,7 @@ const registerSchema = z
       .string()
       .email("Format email tidak valid.")
       .max(255, "Email terlalu panjang.")
-      .transform((value) => value.toLowerCase().trim()),
+      .trim(),
 
     phone: z
       .string()
