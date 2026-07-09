@@ -1,0 +1,40 @@
+@reference "../../globals.css";
+
+
+.root {
+  @apply flex items-center gap-2;
+}
+
+
+.logo {
+  @apply flex h-9 w-9 items-center justify-center;
+  @apply rounded-xl;
+  @apply bg-linear-to-br from-accent to-primary;
+  @apply shadow-lg shadow-blue-200;
+}
+
+
+.icon {
+  @apply h-5 w-5 fill-white;
+}
+
+
+.text {
+  @apply leading-tight;
+}
+
+
+.title {
+  @apply text-sm font-extrabold tracking-tight;
+  @apply text-foreground;
+}
+
+
+.highlight {
+  @apply text-primary;
+}
+
+
+.subtitle {
+  @apply text-[10px] font-medium text-slate-400;
+}
