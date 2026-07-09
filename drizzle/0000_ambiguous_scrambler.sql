@@ -1,10 +1,11 @@
 CREATE TABLE "users" (
-	"id" bigserial PRIMARY KEY NOT NULL,
+	"id" varchar(16) PRIMARY KEY NOT NULL,
 	"name" varchar(255),
 	"username" varchar(255),
 	"email" varchar(255),
 	"password" varchar(255) NOT NULL,
 	"status" varchar(50),
+	"role" varchar(50),
 	"phone" varchar(50),
 	"email_verified_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now(),
@@ -49,7 +50,7 @@ CREATE TABLE "doctors" (
 --> statement-breakpoint
 CREATE TABLE "employees" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"user_id" bigint,
+	"user_id" varchar(16),
 	"department_id" bigint,
 	"position_id" bigint,
 	"employee_code" varchar(100),
@@ -98,7 +99,7 @@ CREATE TABLE "appointments" (
 --> statement-breakpoint
 CREATE TABLE "patients" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"user_id" bigint,
+	"user_id" varchar,
 	"medical_record_number" varchar(100),
 	"nik" varchar(30),
 	"full_name" varchar(255),
@@ -358,7 +359,7 @@ CREATE TABLE "inpatient_admissions" (
 --> statement-breakpoint
 CREATE TABLE "audit_logs" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"user_id" bigint,
+	"user_id" varchar,
 	"action" varchar(100),
 	"table_name" varchar(100),
 	"record_id" bigint,
@@ -370,7 +371,7 @@ CREATE TABLE "audit_logs" (
 --> statement-breakpoint
 CREATE TABLE "cms_pages" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"created_by" bigint,
+	"created_by" varchar,
 	"title" varchar(255),
 	"slug" varchar(255),
 	"content" text,
@@ -380,7 +381,7 @@ CREATE TABLE "cms_pages" (
 --> statement-breakpoint
 CREATE TABLE "cms_posts" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"created_by" bigint,
+	"created_by" varchar,
 	"title" varchar(255),
 	"slug" varchar(255),
 	"content" text,
@@ -412,7 +413,7 @@ CREATE TABLE "hospital_infos" (
 --> statement-breakpoint
 CREATE TABLE "notifications" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"user_id" bigint,
+	"user_id" varchar,
 	"title" varchar(255),
 	"message" text,
 	"type" varchar(50),
@@ -421,12 +422,34 @@ CREATE TABLE "notifications" (
 );
 --> statement-breakpoint
 CREATE TABLE "sessions" (
-	"id" bigserial PRIMARY KEY NOT NULL,
-	"user_id" bigint NOT NULL,
+	"id" varchar(16) PRIMARY KEY NOT NULL,
+	"user_id" varchar(255) NOT NULL,
 	"token" varchar(255) NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
 	"last_activity" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE "otp_requests" (
+	"id" bigserial PRIMARY KEY NOT NULL,
+	"email" varchar(255),
+	"otp_hash" varchar(255) NOT NULL,
+	"expires_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE "password_reset_tokens" (
+	"id" varchar(16) PRIMARY KEY NOT NULL,
+	"user_id" varchar(255) NOT NULL,
+	"email" varchar(255) NOT NULL,
+	"token_hash" varchar(64) NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"used_at" timestamp with time zone,
+	"ip_address" varchar(45),
+	"user_agent" text,
+	"attempt_count" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now()
 );
 --> statement-breakpoint
 ALTER TABLE "beds" ADD CONSTRAINT "beds_room_id_rooms_id_fk" FOREIGN KEY ("room_id") REFERENCES "public"."rooms"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -491,6 +514,7 @@ ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_users_id_fk" FOREIGN
 ALTER TABLE "cms_pages" ADD CONSTRAINT "cms_pages_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cms_posts" ADD CONSTRAINT "cms_posts_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "password_reset_tokens" ADD CONSTRAINT "password_reset_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "beds_room_id_idx" ON "beds" USING btree ("room_id");--> statement-breakpoint
 CREATE INDEX "doctor_schedules_doctor_id_idx" ON "doctor_schedules" USING btree ("doctor_id");--> statement-breakpoint
@@ -570,4 +594,8 @@ CREATE UNIQUE INDEX "cms_pages_slug_unique" ON "cms_pages" USING btree ("slug");
 CREATE INDEX "cms_pages_created_by_idx" ON "cms_pages" USING btree ("created_by");--> statement-breakpoint
 CREATE UNIQUE INDEX "cms_posts_slug_unique" ON "cms_posts" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "cms_posts_created_by_idx" ON "cms_posts" USING btree ("created_by");--> statement-breakpoint
-CREATE INDEX "notifications_user_id_idx" ON "notifications" USING btree ("user_id");
+CREATE INDEX "notifications_user_id_idx" ON "notifications" USING btree ("user_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "password_reset_tokens_token_hash_unique" ON "password_reset_tokens" USING btree ("token_hash");--> statement-breakpoint
+CREATE INDEX "password_reset_tokens_user_id_idx" ON "password_reset_tokens" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "password_reset_tokens_email_idx" ON "password_reset_tokens" USING btree ("email");--> statement-breakpoint
+CREATE INDEX "password_reset_tokens_expires_at_idx" ON "password_reset_tokens" USING btree ("expires_at");

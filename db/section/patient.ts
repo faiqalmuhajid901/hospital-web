@@ -21,7 +21,7 @@ export const patients = pgTable(
   "patients",
   {
     id: id(),
-    userId: fk("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: varchar("user_id").references(() => users.id, { onDelete: "set null" }),
     medicalRecordNumber: varchar("medical_record_number", { length: 100 }),
     nik: varchar("nik", { length: 30 }),
     fullName: varchar("full_name", { length: 255 }),

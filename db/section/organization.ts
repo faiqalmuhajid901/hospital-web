@@ -39,7 +39,9 @@ export const employees = pgTable(
   "employees",
   {
     id: id(),
-    userId: fk("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: varchar("user_id", { length: 16 }).references(() => users.id, {
+  onDelete: "set null",
+}),
     departmentId: fk("department_id").references(() => departments.id, { onDelete: "set null" }),
     positionId: fk("position_id").references(() => positions.id, { onDelete: "set null" }),
     employeeCode: varchar("employee_code", { length: 100 }),

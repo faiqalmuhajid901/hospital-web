@@ -52,6 +52,7 @@ import {
   insuranceProviders,
   patientInsurances,
 } from "./insurance";
+import { passwordResetTokens } from "./tokenForgotPW";
 import { inpatientAdmissions } from "./inpatient";
 import {
   auditLogs,
@@ -68,10 +69,21 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   employee: one(employees),
   patient: one(patients),
   cmsPages: many(cmsPages),
+  passwordResetTokens: many(passwordResetTokens),
   cmsPosts: many(cmsPosts),
   notifications: many(notifications),
   auditLogs: many(auditLogs),
 }));
+
+export const passwordResetTokensRelations = relations(
+  passwordResetTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [passwordResetTokens.userId],
+      references: [users.id],
+    }),
+  })
+);
 
 export const departmentsRelations = relations(departments, ({ many }) => ({
   employees: many(employees),

@@ -19,7 +19,7 @@ export const cmsPages = pgTable(
   "cms_pages",
   {
     id: id(),
-    createdBy: fk("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
     title: varchar("title", { length: 255 }),
     slug: varchar("slug", { length: 255 }),
     content: text("content"),
@@ -36,7 +36,7 @@ export const cmsPosts = pgTable(
   "cms_posts",
   {
     id: id(),
-    createdBy: fk("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
     title: varchar("title", { length: 255 }),
     slug: varchar("slug", { length: 255 }),
     content: text("content"),
@@ -75,7 +75,7 @@ export const notifications = pgTable(
   "notifications",
   {
     id: id(),
-    userId: fk("user_id").references(() => users.id, { onDelete: "cascade" }),
+    userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
     title: varchar("title", { length: 255 }),
     message: text("message"),
     type: varchar("type", { length: 50 }),
@@ -89,7 +89,7 @@ export const auditLogs = pgTable(
   "audit_logs",
   {
     id: id(),
-    userId: fk("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: varchar("user_id").references(() => users.id, { onDelete: "set null" }),
     action: varchar("action", { length: 100 }),
     tableName: varchar("table_name", { length: 100 }),
     // Polymorphic reference to changed record. No FK by design.
