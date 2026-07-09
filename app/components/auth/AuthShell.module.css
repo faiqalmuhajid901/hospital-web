@@ -1,32 +1,384 @@
-.gridBg {
+@reference "../../globals.css";
+
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+.root {
+  @apply min-h-screen px-4 py-6 text-slate-900;
+  @apply sm:px-6 lg:px-8;
+
   background:
-    radial-gradient(circle at 12% 18%, rgba(38, 198, 218, 0.14), transparent 28%),
-    radial-gradient(circle at 88% 12%, rgba(21, 110, 234, 0.12), transparent 32%),
-    linear-gradient(135deg, #ffffff 0%, #f4faff 45%, #eef7ff 100%);
+    radial-gradient(
+      circle at 12% 18%,
+      rgb(38 198 218 / 14%),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      rgb(21 110 234 / 12%),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f4faff 45%,
+      #eef7ff 100%
+    );
 }
 
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.container {
+  @apply mx-auto flex w-full max-w-6xl items-center justify-center;
+
+  min-height: calc(100vh - 48px);
+}
+
+
+/* =========================================================
+   PANEL
+   ========================================================= */
+
+.panel {
+  @apply grid w-full overflow-hidden;
+  @apply rounded-[2rem] border border-white/80;
+  @apply bg-white/70 backdrop-blur-xl;
+  @apply lg:grid-cols-[0.92fr_1.08fr];
+
+  box-shadow:
+    0 24px 70px rgb(17 87 166 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 82%);
+}
+
+
+/* =========================================================
+   LEFT PANEL
+   ========================================================= */
+
+.leftPanel {
+  @apply relative hidden min-h-[690px] flex-col overflow-hidden;
+  @apply bg-linear-to-br from-surface-soft via-white to-background;
+  @apply px-10 py-9;
+  @apply lg:flex;
+}
+
+.intro {
+  @apply mt-16 max-w-[290px];
+}
+
+.eyebrow {
+  @apply mb-4 text-sm font-bold text-primary;
+}
+
+.heading {
+  @apply text-3xl leading-tight font-black tracking-tight;
+  @apply text-foreground;
+}
+
+.description {
+  @apply mt-5 text-sm leading-7 text-slate-500;
+}
+
+
+/* =========================================================
+   WAVE DECORATION
+   ========================================================= */
+
 .wave {
-  position: absolute;
+  @apply pointer-events-none absolute h-28 opacity-75;
+
   left: -6%;
   right: -6%;
   bottom: -1px;
-  height: 112px;
-  opacity: 0.75;
+
   background:
-    radial-gradient(80px 42px at 10% 70%, rgba(38, 198, 218, 0.12) 0 65%, transparent 66%),
-    radial-gradient(110px 54px at 32% 55%, rgba(21, 110, 234, 0.1) 0 65%, transparent 66%),
-    radial-gradient(140px 70px at 60% 70%, rgba(38, 198, 218, 0.1) 0 65%, transparent 66%),
-    radial-gradient(120px 60px at 86% 55%, rgba(21, 110, 234, 0.08) 0 65%, transparent 66%);
+    radial-gradient(
+      80px 42px at 10% 70%,
+      rgb(38 198 218 / 12%) 0 65%,
+      transparent 66%
+    ),
+    radial-gradient(
+      110px 54px at 32% 55%,
+      rgb(21 110 234 / 10%) 0 65%,
+      transparent 66%
+    ),
+    radial-gradient(
+      140px 70px at 60% 70%,
+      rgb(38 198 218 / 10%) 0 65%,
+      transparent 66%
+    ),
+    radial-gradient(
+      120px 60px at 86% 55%,
+      rgb(21 110 234 / 8%) 0 65%,
+      transparent 66%
+    );
 }
 
-.cardShadow {
-  box-shadow:
-    0 22px 60px rgba(13, 76, 146, 0.13),
-    0 4px 14px rgba(15, 52, 96, 0.08);
+
+/* =========================================================
+   RIGHT PANEL
+   ========================================================= */
+
+.rightPanel {
+  @apply flex min-h-[690px] items-center justify-center;
+  @apply px-5 py-10;
+  @apply sm:px-8 lg:px-12;
 }
 
-.panelShadow {
+.formContainer {
+  @apply w-full max-w-[420px];
+}
+
+.mobileBrand {
+  @apply mb-8 flex justify-center;
+  @apply lg:hidden;
+}
+
+
+/* =========================================================
+   AUTH CARD
+   ========================================================= */
+
+.card {
+  @apply rounded-[1.6rem];
+  @apply border border-white;
+  @apply bg-white;
+  @apply px-6 py-7;
+  @apply sm:px-8;
+
   box-shadow:
-    0 24px 70px rgba(17, 87, 166, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    0 22px 60px rgb(13 76 146 / 13%),
+    0 4px 14px rgb(15 52 96 / 8%);
+}
+
+.cardHeader {
+  @apply mb-7;
+}
+
+.cardEyebrow {
+  @apply text-sm font-bold text-primary;
+}
+
+.cardTitle {
+  @apply mt-2 text-2xl font-black tracking-tight;
+  @apply text-foreground;
+}
+
+
+/* =========================================================
+   HOSPITAL ILLUSTRATION
+   ========================================================= */
+
+.hospitalIllustration {
+  @apply relative mx-auto mt-10 h-56 w-full max-w-[310px];
+}
+
+.hospitalBuildingLeft {
+  @apply absolute bottom-0 left-8;
+  @apply h-36 w-48;
+  @apply rounded-t-3xl;
+  @apply border border-blue-100;
+  @apply bg-white/85;
+  @apply shadow-xl shadow-blue-100;
+}
+
+.hospitalBuildingRight {
+  @apply absolute right-8 bottom-0;
+  @apply h-48 w-32;
+  @apply rounded-t-[2rem];
+  @apply border border-blue-100;
+  @apply bg-linear-to-b from-white to-[#dff4ff];
+  @apply shadow-2xl shadow-blue-100;
+}
+
+.buildingHeader {
+  @apply absolute top-5 left-5;
+  @apply h-5 w-20;
+  @apply rounded-full;
+  @apply bg-blue-100;
+}
+
+.buildingWindows {
+  @apply absolute top-14 left-5;
+  @apply grid grid-cols-4 gap-2;
+}
+
+.window {
+  @apply h-4 w-6 rounded;
+  @apply bg-linear-to-b from-[#d9f3ff] to-[#a9dcff];
+}
+
+.rightBuildingHeader {
+  @apply mx-auto mt-5 h-6 w-16;
+  @apply rounded-full bg-primary/10;
+}
+
+.rightBuildingWindows {
+  @apply mx-auto mt-6 grid w-20 grid-cols-3 gap-2;
+}
+
+.rightWindow {
+  @apply h-4 rounded bg-white shadow-sm;
+}
+
+.entrance {
+  @apply absolute bottom-0 left-1/2;
+  @apply h-14 w-16 -translate-x-1/2;
+  @apply rounded-t-2xl bg-primary;
+}
+
+.ground {
+  @apply absolute bottom-0 left-3;
+  @apply h-5 w-[92%];
+  @apply rounded-t-2xl bg-accent/20;
+}
+
+
+/* =========================================================
+   MAIL ILLUSTRATION
+   ========================================================= */
+
+.mailIllustration {
+  @apply relative mx-auto mt-12 h-56 w-full max-w-[300px];
+}
+
+.mailCard {
+  @apply absolute top-12 left-1/2;
+  @apply h-32 w-48 -translate-x-1/2;
+  @apply rounded-3xl;
+  @apply border border-blue-100;
+  @apply bg-white;
+  @apply shadow-2xl shadow-blue-100;
+}
+
+.mailCardTop {
+  @apply absolute inset-x-0 top-0;
+  @apply h-20;
+  @apply rounded-t-3xl;
+  @apply bg-linear-to-br from-primary-soft to-white;
+}
+
+.mailInner {
+  @apply absolute top-12 left-8;
+  @apply h-12 w-32;
+  @apply rounded-2xl;
+  @apply border border-blue-100;
+  @apply bg-white;
+}
+
+.mailLinePrimary {
+  @apply absolute top-16 left-10;
+  @apply h-2 w-20 rounded bg-blue-100;
+}
+
+.mailLineSecondary {
+  @apply absolute top-[5.5rem] left-10;
+  @apply h-2 w-28 rounded bg-cyan-100;
+}
+
+.questionBadge {
+  @apply absolute top-8 left-9;
+  @apply flex h-16 w-16 items-center justify-center;
+  @apply rounded-3xl;
+  @apply bg-linear-to-br from-accent to-primary;
+  @apply text-3xl font-black text-white;
+  @apply shadow-xl shadow-cyan-100;
+}
+
+.mailDecoration {
+  @apply absolute right-10 bottom-5;
+  @apply h-12 w-12;
+  @apply rounded-2xl bg-white shadow-lg;
+}
+
+.mailDecorationInner {
+  @apply mx-auto mt-3 h-6 w-6;
+  @apply rounded-full bg-primary/10;
+}
+
+
+/* =========================================================
+   LOCK ILLUSTRATION
+   ========================================================= */
+
+.lockIllustration {
+  @apply relative mx-auto mt-12 h-56 w-full max-w-[300px];
+}
+
+.lockCard {
+  @apply absolute bottom-8 left-1/2;
+  @apply h-28 w-36 -translate-x-1/2;
+  @apply rounded-3xl;
+  @apply border border-blue-100;
+  @apply bg-white;
+  @apply shadow-2xl shadow-blue-100;
+}
+
+.lockBadge {
+  @apply absolute top-8 left-1/2;
+  @apply h-14 w-14 -translate-x-1/2;
+  @apply rounded-2xl;
+  @apply bg-linear-to-br from-accent to-primary;
+  @apply shadow-xl shadow-cyan-100;
+}
+
+.lockBadgeCircle {
+  @apply absolute top-5 left-1/2;
+  @apply h-4 w-4 -translate-x-1/2;
+  @apply rounded-full bg-white;
+}
+
+.lockBadgeStem {
+  @apply absolute top-8 left-1/2;
+  @apply h-5 w-1.5 -translate-x-1/2;
+  @apply rounded-full bg-white;
+}
+
+.mainLock {
+  @apply absolute top-8 left-1/2;
+  @apply h-20 w-20 -translate-x-1/2;
+  @apply rounded-3xl;
+  @apply bg-foreground;
+  @apply shadow-xl;
+}
+
+.lockShackle {
+  @apply absolute left-1/2;
+  @apply h-12 w-12 -translate-x-1/2;
+  @apply rounded-t-full;
+  @apply border-[7px] border-foreground border-b-0;
+
+  top: -22px;
+}
+
+.lockKeyCircle {
+  @apply absolute top-8 left-1/2;
+  @apply h-5 w-5 -translate-x-1/2;
+  @apply rounded-full bg-white;
+}
+
+.lockKeyStem {
+  @apply absolute top-12 left-1/2;
+  @apply h-7 w-2 -translate-x-1/2;
+  @apply rounded-full bg-white;
+}
+
+.lockDecorationLeft {
+  @apply absolute bottom-10 left-11;
+  @apply h-8 w-8 rounded-full bg-cyan-100;
+}
+
+.lockDecorationRight {
+  @apply absolute right-12 bottom-16;
+  @apply h-10 w-10 rounded-2xl bg-blue-100;
+}
+
+.lockDecorationSmall {
+  @apply absolute right-20 bottom-4;
+  @apply h-4 w-4 rounded-full bg-accent/30;
 }
